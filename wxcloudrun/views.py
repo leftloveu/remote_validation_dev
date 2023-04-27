@@ -13,7 +13,7 @@ def index():
     """
     return make_succ_response('index.html')
 
-@app.route('/api/test', methods=['POST'])
+@app.route('/api/test', methods=['GET'])
 def test():
     return make_succ_response('this is a test API')
 
