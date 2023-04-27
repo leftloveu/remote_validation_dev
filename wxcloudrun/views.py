@@ -35,8 +35,8 @@ def check_user_status():
 
     rows = db.session.execute(sql)
 
-    print(rows)
-    return make_succ_response(json.dumps(rows))
+    # print(rows)
+    return make_succ_response(rows)
 
 
 @app.route('/api/count', methods=['POST'])
