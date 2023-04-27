@@ -11,8 +11,11 @@ def index():
     """
     :return: 返回index页面
     """
-    return render_template('index.html')
+    return make_succ_response('index.html')
 
+@app.route('/api/test', methods=['POST'])
+def test():
+    return make_succ_response('this is a test API')
 
 @app.route('/api/count', methods=['POST'])
 def count():
