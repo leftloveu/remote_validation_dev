@@ -4,6 +4,9 @@ from run import app
 from wxcloudrun.dao import delete_counterbyid, query_counterbyid, insert_counter, update_counterbyid
 from wxcloudrun.model import Counters
 from wxcloudrun.response import make_succ_empty_response, make_succ_response, make_err_response
+from sqlalchemy.exc import OperationalError
+from wxcloudrun import db
+import json
 
 
 @app.route('/')
@@ -16,6 +19,25 @@ def index():
 @app.route('/api/test', methods=['POST'])
 def test():
     return make_succ_response('this is a test API')
+
+@app.route('/api/check_user_status', methods=['POST'])
+def check_user_status():
+    # 获取请求体参数
+    params = request.get_json()
+    # 检查openid参数
+    if 'openid' not in params:
+        return make_err_response('缺少openid参数')
+
+    # 按照不同的action的值，进行不同的操作
+    openid = params['openid']
+
+    sql = "select version();"
+
+    rows = db.session.execute(sql)
+
+    print(rows)
+    return make_succ_response(json.dumps(rows))
+
 
 @app.route('/api/count', methods=['POST'])
 def count():
