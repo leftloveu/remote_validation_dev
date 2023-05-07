@@ -32,7 +32,7 @@
       },
       "customLogs": "stderr",
       "initialDelaySeconds": 2,
-      "dataBaseName": "flask_demo",
+      "dataBaseName": "remote_validation",
       "executeSQLs": [
         "CREATE DATABASE IF NOT EXISTS flask_demo;",
         "USE flask_demo;",
