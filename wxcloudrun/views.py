@@ -11,10 +11,10 @@ import config
 import random
 pymysql.install_as_MySQLdb()
 import json
-# import logging
+import logging
 
 # 初始化日志
-# logger = logging.getLogger('log')
+logger = logging.getLogger('log')
 
 # 初始化DB链接
 def create_conn():
@@ -39,17 +39,17 @@ def test():
 
 @app.route('/api/check_user_status', methods=['POST'])
 def check_user_status():
-    print('/api/check_user_status')
+    logger.info('/api/check_user_status')
     conn = None
     cursor = None
     user_info = ''
     try:
-        print('check_user_status start')
+        logger.info('check_user_status start')
         # 获取数据库链接
         conn = create_conn()
         # 获取请求体参数
         params = request.get_json()
-        print(params)
+        logger.info(params)
         # 检查openid参数
         if 'openid' not in params:
             return make_err_response('缺少openid参数')
@@ -69,14 +69,14 @@ def check_user_status():
             " where ",
             " user_openid = '%s'" % params['openid']
         )
-        print(" ".join(sql))
+        logger.info(" ".join(sql))
         cursor.execute(" ".join(sql))
         row = cursor.fetchone()
-        print(row)
+        logger.info(row)
         if row:
             user_info = row
     except Exception as e:
-        print(str(e))
+        logger.error(str(e))
     finally:
         if cursor:
             cursor.close()
