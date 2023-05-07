@@ -1,0 +1,27 @@
+version: '3'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.development
+    volumes:
+      - .:/app
+    ports:
+      - '27081:80'
+    container_name: wxcloud_remote_validation_dev
+    labels:
+      - wxPort=27082
+      - hostPort=27081
+      - wxcloud=remote_validation_dev
+      - role=container
+    environment:
+      - MYSQL_USERNAME=
+      - MYSQL_PASSWORD=
+      - MYSQL_ADDRESS=
+      - MYSQL_USERNAME=root
+      - MYSQL_PASSWORD=kqSJ9b7J
+      - MYSQL_ADDRESS=sh-cynosdbmysql-grp-hsc16e2c.sql.tencentcdb.com:22114
+networks:
+  default:
+    external:
+      name: wxcb0
