@@ -39,6 +39,7 @@ def test():
 
 @app.route('/api/check_user_status', methods=['POST'])
 def check_user_status():
+    print('/api/check_user_status')
     conn = None
     cursor = None
     user_info = ''
