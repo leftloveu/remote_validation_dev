@@ -16,7 +16,7 @@ app.config['DEBUG'] = config.DEBUG
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://{}:{}@{}:{}/flask_demo'.format(config.username, config.password,
                                                                              config.db_address, config.port)
-print(app.config['SQLALCHEMY_DATABASE_URI'])
+# print(app.config['SQLALCHEMY_DATABASE_URI'])
 print('看看能不能打印到控制台')
 # 初始化DB操作对象
 db = SQLAlchemy(app)
@@ -26,6 +26,11 @@ from wxcloudrun import views
 
 # 加载配置
 app.config.from_object('config')
+
+conn = pymysql.connect(host=config.db_address, user=config.username, passwd=config.password, database=config.database, port=config.port, charset='utf8', cursorclass=pymysql.cursors.DictCursor)
+print(conn)
+conn.close()
+print('conn closed')
 
 # pymysql_conn = pymysql.connect(host=config.db_address, user=config.username, password=config.password, db=config.database, port=config.port, charset='utf8')
 
