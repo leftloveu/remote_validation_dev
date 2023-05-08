@@ -3,7 +3,8 @@
     {
       "name": "remote_validation_dev",
       "domain": "",
-      "ip": ""
+      "ip": "",
+      "containerId": "24d47e59f94b5464aef74a8668581d65271a44f58c0b539fb552d21e6ef6dc85"
     }
   ],
   "config": {
