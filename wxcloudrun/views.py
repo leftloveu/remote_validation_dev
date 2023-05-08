@@ -39,17 +39,17 @@ def test():
 
 @app.route('/api/check_user_status', methods=['POST'])
 def check_user_status():
-    logger.info('/api/check_user_status')
+    logger.debug('/api/check_user_status')
     conn = None
     cursor = None
     user_info = ''
     try:
-        logger.info('check_user_status start')
+        logger.debug('check_user_status start')
         # 获取数据库链接
         conn = create_conn()
         # 获取请求体参数
         params = request.get_json()
-        logger.info(params)
+        logger.debug(params)
         # 检查openid参数
         if 'openid' not in params:
             return make_err_response('缺少openid参数')
@@ -69,10 +69,10 @@ def check_user_status():
             " where ",
             " user_openid = '%s'" % params['openid']
         )
-        logger.info(" ".join(sql))
+        logger.debug(" ".join(sql))
         cursor.execute(" ".join(sql))
         row = cursor.fetchone()
-        logger.info(row)
+        logger.debug(row)
         if row:
             user_info = row
     except Exception as e:
