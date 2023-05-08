@@ -689,7 +689,7 @@ def get_apply_info_by_apply_order_num():
             " DATE_FORMAT(apply_order_create_time,'%Y-%m-%d %H:%i:%S') as apply_order_create_time, ",
             " DATE_FORMAT(apply_order_modify_time,'%Y-%m-%d %H:%i:%S') as apply_order_modify_time, ",
             " DATE_FORMAT(apply_order_submit_time,'%Y-%m-%d %H:%i:%S') as apply_order_submit_time, ",
-            " apply_order_submit_openid ",
+            " apply_order_submit_openid, ",
             " adjust_comment "
             " from ",
             " t_a_application ",
