@@ -15,11 +15,7 @@ import logging
 
 # 初始化日志
 # logger = logging.getLogger('log')
-logger = logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s',
-    filename="test.log"
-    )
+
 
 # 初始化DB链接
 def create_conn():
@@ -44,17 +40,17 @@ def test():
 
 @app.route('/api/check_user_status', methods=['POST'])
 def check_user_status():
-    logger.debug('/api/check_user_status')
+    print('/api/check_user_status')
     conn = None
     cursor = None
     user_info = ''
     try:
-        logger.debug('check_user_status start')
+        print('check_user_status start')
         # 获取数据库链接
         conn = create_conn()
         # 获取请求体参数
         params = request.get_json()
-        logger.debug(params)
+        print(params)
         # 检查openid参数
         if 'openid' not in params:
             return make_err_response('缺少openid参数')
@@ -74,14 +70,14 @@ def check_user_status():
             " where ",
             " user_openid = '%s'" % params['openid']
         )
-        logger.debug(" ".join(sql))
+        print(" ".join(sql))
         cursor.execute(" ".join(sql))
         row = cursor.fetchone()
-        logger.debug(row)
+        print(row)
         if row:
             user_info = row
     except Exception as e:
-        logger.error(str(e))
+        print(str(e))
     finally:
         if cursor:
             cursor.close()

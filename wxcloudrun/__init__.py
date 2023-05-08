@@ -27,10 +27,10 @@ from wxcloudrun import views
 # 加载配置
 app.config.from_object('config')
 
-conn = pymysql.connect(host=config.db_address, user=config.username, passwd=config.password, database=config.database, port=config.port, charset='utf8', cursorclass=pymysql.cursors.DictCursor)
-print(conn)
-conn.close()
-print('conn closed')
+# conn = pymysql.connect(host=config.db_address, user=config.username, passwd=config.password, database=config.database, port=config.port, charset='utf8', cursorclass=pymysql.cursors.DictCursor)
+# print(conn)
+# conn.close()
+# print('conn closed')
 
 # pymysql_conn = pymysql.connect(host=config.db_address, user=config.username, password=config.password, db=config.database, port=config.port, charset='utf8')
 

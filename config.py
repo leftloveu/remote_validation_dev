@@ -12,6 +12,8 @@ DEBUG = True
 
 username    = 'root'
 password    = 'kqSJ9b7J'
+# db_address  = 'sh-cynosdbmysql-grp-hsc16e2c.sql.tencentcdb.com'
+# port        = 22114
 db_address  = '10.26.104.118'
 port        = 3306
 database    = 'remote_validation'
