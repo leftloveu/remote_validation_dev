@@ -14,7 +14,12 @@ import json
 import logging
 
 # 初始化日志
-logger = logging.getLogger('log')
+# logger = logging.getLogger('log')
+logger = logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s',
+    filename="logs/test.log"
+    )
 
 # 初始化DB链接
 def create_conn():
