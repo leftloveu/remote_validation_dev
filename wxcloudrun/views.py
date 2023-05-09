@@ -690,7 +690,7 @@ def get_apply_info_by_apply_order_num():
             " plate_transport_time, ",
             " DATE_FORMAT(appoint_verification_time,'%H:%i') as appoint_verification_time, ",
             " DATE_FORMAT(appoint_verification_date,'%Y-%m-%d') as appoint_verification_date, ",
-            " if(toll_station_id is null, -1, toll_station_id) as toll_station_id, ",
+            " if(toll_station_id is null, 0, toll_station_id) as toll_station_id, ",
             " appoint_verification_location, ",
             " apply_order_status, ",
             " DATE_FORMAT(apply_order_create_time,'%Y-%m-%d %H:%i:%S') as apply_order_create_time, ",
