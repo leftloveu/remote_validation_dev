@@ -479,9 +479,13 @@ def get_driver_verified_apply():
         # 获取游标
         cursor = conn.cursor()
         sql = (
-            " select apply_order_id",
+            " select apply_order_id ",
             ",apply_order_num ",
             ",DATE_FORMAT(apply_order_submit_time,'%Y-%m-%d %H:%i:%S') as apply_order_submit_time ",
+            ",DATE_FORMAT(start_date,'%Y-%m-%d') as start_date ",
+            ",DATE_FORMAT(start_time,'%H:%i:%S') as start_time ",
+            ",DATE_FORMAT(end_date,'%Y-%m-%d') as end_date ",
+            ",DATE_FORMAT(end_time,'%H:%i:%S') as end_time ",
             ",plate_number ",
             ",approved_path ",
             ",appoint_verification_location ",
@@ -489,10 +493,11 @@ def get_driver_verified_apply():
             " from ",
             " t_a_application ",
             " where ",
-            " apply_order_submit_openid = '%s'" % params['openid'],
+            " apply_order_submit_openid = '%s' " % params['openid'],
             " AND apply_order_status = 3 ",
-            " AND now() <= end_time",
-            " order by end_time asc "
+            " AND now() >= FROM_UNIXTIME(UNIX_TIMESTAMP(DATE(start_date)) + UNIX_TIMESTAMP(TIME(start_time)) - UNIX_TIMESTAMP(DATE(NOW()))) ",
+            " AND now() <= FROM_UNIXTIME(UNIX_TIMESTAMP(DATE(end_date)) + UNIX_TIMESTAMP(TIME(end_time)) - UNIX_TIMESTAMP(DATE(NOW()))) ",
+            " order by end_date asc, end_time asc "
         )
         print(" ".join(sql))
         cursor.execute(" ".join(sql))
