@@ -319,28 +319,55 @@ def get_apply_info_list_officer():
         # openid存在，开始校验此openid是否绑定角色
         # 获取游标
         cursor = conn.cursor()
-        sql = (
-            " select d.apply_order_id",
-            ",d.apply_order_num ",
-            ",DATE_FORMAT(d.apply_order_submit_time,'%Y-%m-%d %H:%i:%S') as apply_order_submit_time ",
-            ",d.plate_number ",
-            ",d.approved_path ",
-            ",d.appoint_verification_location ",
-            ",d.apply_order_status ",
-            "FROM ",
-            "t_a_application d ",
-            "WHERE d.toll_station_id ",
-            "IN ( SELECT c.toll_station_id ",
-            "FROM ",
-            "t_u_user a, ",
-            "t_u_office_account b, ",
-            "t_t_toll_station c ",
-            "WHERE ",
-            "a.user_openid = '%s'" % params['openid'],
-            "AND a.user_associated_account = b.office_account ",
-            "AND b.office_id = c.office_id) ",
-            "order by apply_order_submit_time desc "
+        # 如果是一支队的账号，则查全部
+        sql_check = (
+            " select user_associated_account ",
+            " from ",
+            " t_u_user ",
+            " where ",
+            " user_openid = '%s'" % params['openid'],
+            " and ",
+            " user_associated_account = 'YZDZHZX' "
         )
+        cursor.execute(" ".join(sql_check))
+        rows = cursor.fetchall()
+        if len(rows) > 0:
+            # 当前openid绑定的账号是一支队的账号
+            sql = (
+                " select d.apply_order_id",
+                ",d.apply_order_num ",
+                ",DATE_FORMAT(d.apply_order_submit_time,'%Y-%m-%d %H:%i:%S') as apply_order_submit_time ",
+                ",d.plate_number ",
+                ",d.approved_path ",
+                ",d.appoint_verification_location ",
+                ",d.apply_order_status ",
+                " FROM ",
+                " t_a_application d ",
+                " order by apply_order_submit_time desc "
+            )
+        else:
+            sql = (
+                " select d.apply_order_id",
+                ",d.apply_order_num ",
+                ",DATE_FORMAT(d.apply_order_submit_time,'%Y-%m-%d %H:%i:%S') as apply_order_submit_time ",
+                ",d.plate_number ",
+                ",d.approved_path ",
+                ",d.appoint_verification_location ",
+                ",d.apply_order_status ",
+                "FROM ",
+                "t_a_application d ",
+                "WHERE d.toll_station_id ",
+                "IN ( SELECT c.toll_station_id ",
+                "FROM ",
+                "t_u_user a, ",
+                "t_u_office_account b, ",
+                "t_t_toll_station c ",
+                "WHERE ",
+                "a.user_openid = '%s'" % params['openid'],
+                "AND a.user_associated_account = b.office_account ",
+                "AND b.office_id = c.office_id) ",
+                "order by apply_order_submit_time desc "
+            )
         print(" ".join(sql))
         cursor.execute(" ".join(sql))
         rows = cursor.fetchall()
