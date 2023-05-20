@@ -755,6 +755,51 @@ def get_apply_info_by_apply_order_num():
             conn.close()
     return make_succ_response(apply_info_list)
 
+@app.route('/api/get_valid_pic_info_by_apply_order_num', methods=['POST'])
+def get_valid_pic_info_by_apply_order_num():
+    conn = None
+    cursor = None
+    valid_pic_info_info_list = ''
+    try:
+        print('get_valid_pic_info_by_apply_order_num start')
+        # 获取数据库链接
+        conn = create_conn()
+        # conn = pymysql.connect(host=config.db_address, user=config.username, passwd=config.password, database=config.database, port=config.port, charset='utf8')
+        # 获取请求体参数
+        params = request.get_json()
+        print(params)
+        # 获取游标
+        cursor = conn.cursor()
+        sql = (
+            " select ",
+            " apply_order_num, ",
+            " valid_vehicle_front_files_cloudID, ",
+            " valid_vehicle_back_files_cloudID, ",
+            " valid_vehicle_left_front_files_cloudID, ",
+            " valid_vehicle_left_back_files_cloudID, ",
+            " valid_vehicle_right_front_files_cloudID, ",
+            " valid_vehicle_right_back_files_cloudID, ",
+            " valid_whole_scene_1_files_cloudID, ",
+            " valid_whole_scene_2_files_cloudID ",
+            " from ",
+            " t_a_application_valid_photo ",
+            " where apply_order_num = %s " % params['apply_order_num']
+        )
+        print(" ".join(sql))
+        cursor.execute(" ".join(sql))
+        rows = cursor.fetchall()
+        print(rows)
+        if rows:
+            valid_pic_info_info_list = rows
+    except Exception as e:
+        print(str(e))
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+    return make_succ_response(valid_pic_info_info_list)
+
 @app.route('/api/modify_apply_status', methods=['POST'])
 def modify_apply_status():
     conn = None
