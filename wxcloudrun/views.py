@@ -244,6 +244,7 @@ def get_apply_info_list():
             ",approved_path ",
             ",appoint_verification_location ",
             ",apply_order_status ",
+            ",adjust_comment ",
             " from ",
             " t_a_application ",
             " where ",
