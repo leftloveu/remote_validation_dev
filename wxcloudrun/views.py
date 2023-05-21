@@ -709,6 +709,7 @@ def get_apply_info_by_apply_order_num():
             " over_limit_license_cloudID, ",
             " road_operating_license_cloudID, ",
             " approved_path, ",
+            " solution_files_cloudID, ",
             " escort_solution_cloudID, ",
             # " DATE_FORMAT(start_time,'%H:%i') as start_time, ",
             # " DATE_FORMAT(end_time,'%H:%i') as end_time, ",
