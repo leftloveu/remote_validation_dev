@@ -239,6 +239,7 @@ def get_apply_info_list():
         sql = (
             " select apply_order_id",
             ",apply_order_num ",
+            ",DATE_FORMAT(apply_order_create_time, '%Y-%m-%d %H:%i:%S') AS apply_order_create_time ",
             ",DATE_FORMAT(apply_order_submit_time,'%Y-%m-%d %H:%i:%S') as apply_order_submit_time ",
             ",plate_number ",
             ",approved_path ",
@@ -249,7 +250,9 @@ def get_apply_info_list():
             " t_a_application ",
             " where ",
             " apply_order_submit_openid = '%s'" % params['openid'],
-            " order by apply_order_submit_time desc "
+            " order by ",
+            " apply_order_create_time DESC ",
+            ",apply_order_submit_time desc "
         )
         print(" ".join(sql))
         cursor.execute(" ".join(sql))
@@ -337,6 +340,7 @@ def get_apply_info_list_officer():
             sql = (
                 " select d.apply_order_id",
                 ",d.apply_order_num ",
+                ",DATE_FORMAT(d.apply_order_create_time, '%Y-%m-%d %H:%i:%S') AS apply_order_create_time",
                 ",DATE_FORMAT(d.apply_order_submit_time,'%Y-%m-%d %H:%i:%S') as apply_order_submit_time ",
                 ",d.plate_number ",
                 ",d.approved_path ",
@@ -344,12 +348,14 @@ def get_apply_info_list_officer():
                 ",d.apply_order_status ",
                 " FROM ",
                 " t_a_application d ",
+                " where d.apply_order_status = 1 ",
                 " order by apply_order_submit_time desc "
             )
         else:
             sql = (
                 " select d.apply_order_id",
                 ",d.apply_order_num ",
+                ",DATE_FORMAT(d.apply_order_create_time, '%Y-%m-%d %H:%i:%S') AS apply_order_create_time",
                 ",DATE_FORMAT(d.apply_order_submit_time,'%Y-%m-%d %H:%i:%S') as apply_order_submit_time ",
                 ",d.plate_number ",
                 ",d.approved_path ",
@@ -367,6 +373,7 @@ def get_apply_info_list_officer():
                 "a.user_openid = '%s'" % params['openid'],
                 "AND a.user_associated_account = b.office_account ",
                 "AND b.office_id = c.office_id) ",
+                "AND d.apply_order_status = 1 ",
                 "order by apply_order_submit_time desc "
             )
         print(" ".join(sql))
@@ -422,7 +429,7 @@ def get_valid_info_list_officer():
             "a.user_openid = '%s'" % params['openid'],
             "AND a.user_associated_account = b.office_account ",
             "AND b.office_id = c.office_id) ",
-            "AND d.apply_order_status in (1, 2)",
+            "AND d.apply_order_status = 2 ",
             "order by d.apply_order_submit_time desc "
         )
         print(" ".join(sql))
