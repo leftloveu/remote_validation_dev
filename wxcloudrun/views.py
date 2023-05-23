@@ -495,6 +495,54 @@ def get_valid_info_list():
             conn.close()
     return make_succ_response(apply_info)
 
+@app.route('/api/get_qrcode_by_apply_order_num', methods=['POST'])
+def get_qrcode_by_apply_order_num():
+    conn = None
+    cursor = None
+    driver_verified_apply_list = ''
+    try:
+        print('get_qrcode_by_apply_order_num start')
+        # 获取数据库链接
+        conn = create_conn()
+        # 获取请求体参数
+        params = request.get_json()
+        print(params)
+        # 检查openid参数
+        if 'apply_order_num' not in params:
+            return make_err_response('缺少apply_order_num参数')
+        # openid存在，开始校验此openid是否绑定角色
+        # 获取游标
+        cursor = conn.cursor()
+        sql = (
+            " select apply_order_id ",
+            ",apply_order_num ",
+            ",DATE_FORMAT(apply_order_submit_time,'%Y-%m-%d %H:%i:%S') as apply_order_submit_time ",
+            ",DATE_FORMAT(start_datetime,'%Y-%m-%d %H:%i') as start_datetime ",
+            ",DATE_FORMAT(end_datetime,'%Y-%m-%d %H:%i') as end_datetime ",
+            ",plate_number ",
+            ",approved_path ",
+            ",appoint_verification_location ",
+            ",apply_order_status ",
+            " from ",
+            " t_a_application ",
+            " where ",
+            " apply_order_num = '%s' " % params['apply_order_num'],
+        )
+        print(" ".join(sql))
+        cursor.execute(" ".join(sql))
+        row = cursor.fetchone()
+        print(row)
+        if row:
+            driver_verified_apply_list = row
+    except Exception as e:
+        print(str(e))
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+    return make_succ_response(driver_verified_apply_list)
+
 @app.route('/api/get_driver_verified_apply', methods=['POST'])
 def get_driver_verified_apply():
     conn = None
@@ -531,10 +579,10 @@ def get_driver_verified_apply():
             " t_a_application ",
             " where ",
             " apply_order_submit_openid = '%s' " % params['openid'],
-            " AND apply_order_status = 3 ",
-            " AND now() >= start_datetime ",
-            " AND now() <= end_datetime ",
-            " order by end_datetime asc "
+            " AND apply_order_status in (3,4) ",
+            # " AND now() >= start_datetime ",
+            # " AND now() <= end_datetime ",
+            " order by apply_order_create_time desc "
         )
         print(" ".join(sql))
         cursor.execute(" ".join(sql))
