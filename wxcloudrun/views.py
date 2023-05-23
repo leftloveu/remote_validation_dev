@@ -348,7 +348,7 @@ def get_apply_info_list_officer():
                 ",d.apply_order_status ",
                 " FROM ",
                 " t_a_application d ",
-                " where d.apply_order_status = 1 ",
+                # " where d.apply_order_status = 1 ",
                 " order by apply_order_submit_time desc "
             )
         else:
@@ -373,7 +373,7 @@ def get_apply_info_list_officer():
                 "a.user_openid = '%s'" % params['openid'],
                 "AND a.user_associated_account = b.office_account ",
                 "AND b.office_id = c.office_id) ",
-                "AND d.apply_order_status = 1 ",
+                # "AND d.apply_order_status = 1 ",
                 "order by apply_order_submit_time desc "
             )
         print(" ".join(sql))
