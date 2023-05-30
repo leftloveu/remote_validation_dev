@@ -12,6 +12,7 @@ import random
 pymysql.install_as_MySQLdb()
 import json
 import logging
+import requests, time, hashlib
 
 # 初始化日志
 # logger = logging.getLogger('log')
@@ -1012,7 +1013,6 @@ def count():
     else:
         return make_err_response('action参数错误')
 
-
 @app.route('/api/count', methods=['GET'])
 def get_count():
     """
@@ -1020,3 +1020,87 @@ def get_count():
     """
     counter = Counters.query.filter(Counters.id == 1).first()
     return make_succ_response(0) if counter is None else make_succ_response(counter.count)
+
+@app.route('/api/recive_callback', methods=['POST'])
+def recive_callback():
+    err_msg = ''
+    recive_callback_data = {
+        'uid': None,
+        'serviceId': None,
+        'requestId': None,
+        'callId': None,
+        'caller': None,
+        'callee': None,
+        'inviteTime': None,
+        'ringTime': None,
+        'answerTime': None,
+        'disconnectTime': None,
+        'userKey': None,
+        'serviceDuration': None,
+        'serviceResult': None,
+        'endReason': None,
+        'sipCode': None
+    }
+    try:
+        # 获取请求体参数
+        params = request.get_json()
+        # 规整数据
+        for key in recive_callback_data.keys():
+            if key in params.keys():
+                recive_callback_data[key] = params[key]
+        # 拼接数据写入DB
+        # 获取数据库链接
+        # conn = create_conn()
+        # sql_1_list = ["INSERT INTO t_a_application ("]
+    except Exception as e:
+        err_msg = str(e)
+        return make_err_response(err_msg)
+    finally:
+        print('------- recive_callback_params -------')
+        print(params)
+        print('------- recive_callback_data -------')
+        print(recive_callback_data)
+        return make_succ_empty_response()
+
+@app.route('/api/call', methods=['POST'])
+def call():
+    url = 'http://123.56.67.182:19201/vms'
+    headers = {
+        'Content-Type': 'application/json;charset=utf-8',
+    }
+    timestamp_str = datetime.now().strftime("%Y%m%d%H%M%S")
+    password_str = '300fd5c0-bbcf-4520-8b9f-6c5e1521acd2' + timestamp_str
+    data = {
+        'uid': '75e07e8c-89db-4492-b946-9d8a30570e37',
+        'serviceType': 2,
+        'timestamp': timestamp_str,
+        'password': hashlib.md5(password_str.encode('utf-8')).hexdigest(),
+        'callee': '18520309090',
+        'playWay': 0,
+        'playTimes': 1,
+        'ringId': '74a50bde-3b45-4a22-86ea-dc2b07830f85',
+    }
+    json_data = json.dumps(data)
+    
+    print('------- url -------')
+    print(url)
+    print('------- headers -------')
+    print(headers)
+    print('------- data -------')
+    print(data)
+    print(type(data))
+    print('------- json_data -------')
+    print(json_data)
+    print(type(json_data))
+
+    result = requests.post(url, headers=headers, data=json_data)
+    print('------- response -------')
+    print(result.content.decode('utf-8'))
+
+if __name__ == '__main__':
+    pass
+    # print('test')
+    # call()
+    # print(round(time.time() * 1000))
+    # current_time = datetime.now().strftime("%Y%m%d%H%M%S")
+    # print(current_time)
