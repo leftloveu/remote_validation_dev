@@ -1024,6 +1024,7 @@ def get_count():
 @app.route('/api/recive_callback', methods=['POST'])
 def recive_callback():
     err_msg = ''
+    params = ''
     recive_callback_data = {
         'uid': None,
         'serviceId': None,
@@ -1096,6 +1097,7 @@ def call():
     result = requests.post(url, headers=headers, data=json_data)
     print('------- response -------')
     print(result.content.decode('utf-8'))
+    return make_succ_empty_response()
 
 if __name__ == '__main__':
     pass
