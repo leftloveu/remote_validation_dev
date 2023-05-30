@@ -1065,22 +1065,34 @@ def recive_callback():
 
 @app.route('/api/call', methods=['POST'])
 def call():
+    # 获取请求体参数
+    params = request.get_json()
+
+    content = '你好，车牌号为%s的超限运输车辆在%s收费站申请验证，请及时处理！' % (params['plate_number'], params['toll_station'])
+
     url = 'http://123.56.67.182:19201/vms'
+
     headers = {
         'Content-Type': 'application/json;charset=utf-8',
     }
+
     timestamp_str = datetime.now().strftime("%Y%m%d%H%M%S")
+
     password_str = '300fd5c0-bbcf-4520-8b9f-6c5e1521acd2' + timestamp_str
+
     data = {
         'uid': '75e07e8c-89db-4492-b946-9d8a30570e37',
         'serviceType': 2,
         'timestamp': timestamp_str,
         'password': hashlib.md5(password_str.encode('utf-8')).hexdigest(),
-        'callee': '18520309090',
-        'playWay': 0,
+        'callee': params['callee'],
+        'playWay': 1,
         'playTimes': 1,
-        'ringId': '74a50bde-3b45-4a22-86ea-dc2b07830f85',
+        'templateId': 'f3930f37-6fb0-463e-9b3f-214653a09593',
+        'requestId': params['requestId'],
+        'content': content
     }
+
     json_data = json.dumps(data)
     
     print('------- url -------')
