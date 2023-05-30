@@ -1088,7 +1088,7 @@ def call():
         'callee': params['callee'],
         'playWay': 1,
         'playTimes': 1,
-        'templateId': 'f3930f37-6fb0-463e-9b3f-214653a09593',
+        'templateId': 'ef32276a-9495-4079-8887-9665754632cb',
         'requestId': params['requestId'],
         'content': content
     }
