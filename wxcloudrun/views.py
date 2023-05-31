@@ -59,13 +59,7 @@ def check_user_status():
         # 获取游标
         cursor = conn.cursor()
         sql = (
-            " select user_id",
-            ",user_name ",
-            ",user_id_card_num ",
-            ",user_mobile ",
-            ",user_openid ",
-            ",user_role ",
-            ",user_associated_account ",
+            " select * ",
             " from ",
             " t_u_user ",
             " where ",
@@ -173,7 +167,6 @@ def modify_driver_info():
 def bind_officer_info():
     conn = None
     cursor = None
-    office_id = ''
     result = 'false'
     try:
         print('bind_officer_info start')
@@ -184,32 +177,16 @@ def bind_officer_info():
         print(params)
         # 获取游标
         cursor = conn.cursor()
-        # 检查账号密码
-        sql = "select office_id from t_u_office_account where office_account = '%s' and office_password = '%s'" % (params['user_name'], params['password'])
-        print(sql)
-        cursor.execute(sql)
-        row = cursor.fetchone()
-        # 账号密码验证通过，绑定用户
-        if row:
-            sql = (
-                "INSERT INTO t_u_user (",
-                    "user_openid, ",
-                    "user_role, ",
-                    "user_associated_account ",
-                ") VALUE ( ",
-                    "%(user_openid)s, ",
-                    "%(user_role)s, ",
-                    "%(user_associated_account)s) "
-            )
-            args = {
-                'user_openid': params['openid'],
-                'user_role': params['role'],
-                'user_associated_account': params['user_name']
-            }
-            print(" ".join(sql))
-            cursor.execute(" ".join(sql), args)
-            conn.commit()
-            result = 'true'
+        sql = [
+            "UPDATE t_u_user SET ",
+            "user_openid = '%s' " % params['openid'],
+            "WHERE user_mobile = '%s' " % params['user_mobile'],
+            "AND user_role = '%s' " % params['role']
+        ]
+        print("".join(sql))
+        cursor.execute("".join(sql))
+        conn.commit()
+        result = 'true'
     except Exception as e:
         print(str(e))
     finally:
@@ -217,7 +194,7 @@ def bind_officer_info():
             cursor.close()
         if conn:
             conn.close()
-    return result
+        return result
 
 @app.route('/api/get_apply_info_list', methods=['POST'])
 def get_apply_info_list():
@@ -247,6 +224,7 @@ def get_apply_info_list():
             ",appoint_verification_location ",
             ",apply_order_status ",
             ",adjust_comment ",
+            ",verification_officer_name ",
             " from ",
             " t_a_application ",
             " where ",
@@ -347,6 +325,7 @@ def get_apply_info_list_officer():
                 ",d.approved_path ",
                 ",d.appoint_verification_location ",
                 ",d.apply_order_status ",
+                ",d.verification_officer_name ",
                 " FROM ",
                 " t_a_application d ",
                 # " where d.apply_order_status = 1 ",
@@ -362,6 +341,7 @@ def get_apply_info_list_officer():
                 ",d.approved_path ",
                 ",d.appoint_verification_location ",
                 ",d.apply_order_status ",
+                ",d.verification_officer_name ",
                 "FROM ",
                 "t_a_application d ",
                 "WHERE d.toll_station_id ",
@@ -868,12 +848,17 @@ def modify_apply_status():
         conn = create_conn()
         # 获取请求体参数
         params = request.get_json()
+        params['verification_datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         print(params)
         # 获取游标
         cursor = conn.cursor()
         sql = (
             "UPDATE t_a_application SET ",
-            "apply_order_status = '%s' " % params['apply_order_status'],
+            "apply_order_status = '%s', " % params['apply_order_status'],
+            "verification_datetime = '%s', " % params['verification_datetime'],
+            "verification_officer_id = '%s', " % params['user_id'],
+            "verification_officer_name = '%s', " % params['user_name'],
+            "verification_officer_openid = '%s' " % params['user_openid'],
             "WHERE ",
             "apply_order_num = '%s' " % params['apply_order_num']
             )
@@ -901,13 +886,18 @@ def save_adjust_comment():
         conn = create_conn()
         # 获取请求体参数
         params = request.get_json()
+        params['verification_datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         print(params)
         # 获取游标
         cursor = conn.cursor()
         sql = (
             "UPDATE t_a_application SET ",
             "apply_order_status = '%s', " % params['apply_order_status'],
-            "adjust_comment = '%s' " % params['adjust_comment'],
+            "adjust_comment = '%s', " % params['adjust_comment'],
+            "verification_datetime = '%s', " % params['verification_datetime'],
+            "verification_officer_id = '%s', " % params['user_id'],
+            "verification_officer_name = '%s', " % params['user_name'],
+            "verification_officer_openid = '%s' " % params['user_openid'],
             "WHERE ",
             "apply_order_num = '%s' " % params['apply_order_num']
             )
@@ -1110,6 +1100,70 @@ def call():
     print('------- response -------')
     print(result.content.decode('utf-8'))
     return make_succ_empty_response()
+
+@app.route('/api/valid_officer', methods=['POST'])
+def valid_officer():
+    conn = None
+    cursor = None
+    officer_info = []
+    try:
+        print('valid_officer start')
+        # 获取数据库链接
+        conn = create_conn()
+        # 获取请求体参数
+        params = request.get_json()
+        print(params)
+        # 获取游标
+        cursor = conn.cursor()
+        # 检查账号密码
+        sql = "select * from t_u_user where user_mobile = '%s' and user_password = '%s'" % (params['user_mobile'], params['user_password'])
+        print(sql)
+        cursor.execute(sql)
+        row = cursor.fetchone()
+        # 账号密码验证通过，绑定用户
+        if row:
+            officer_info = row
+    except Exception as e:
+        print(str(e))
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+        return make_succ_response(officer_info)
+    
+@app.route('/api/unbind_officer', methods=['POST'])
+def unbind_officer():
+    conn = None
+    cursor = None
+    result = 'false'
+    try:
+        print('unbind_officer start')
+        # 获取数据库链接
+        conn = create_conn()
+        # 获取请求体参数
+        params = request.get_json()
+        print(params)
+        # 获取游标
+        cursor = conn.cursor()
+        sql = (
+            "UPDATE t_u_user SET ",
+            "user_openid = null ",
+            "WHERE ",
+            "user_id = '%s' " % params['user_id']
+            )
+        print(" ".join(sql))
+        cursor.execute(" ".join(sql))
+        conn.commit()
+        result = 'true'
+    except Exception as e:
+        print(str(e))
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+    return result
 
 if __name__ == '__main__':
     pass
