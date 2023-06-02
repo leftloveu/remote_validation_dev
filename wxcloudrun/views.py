@@ -1122,6 +1122,8 @@ def recive_callback():
         print(" ".join(sql))
         cursor.execute(" ".join(sql), recive_callback_data)
         conn.commit()
+        # 基于返回的数据，做逻辑判断，是否重新发起外呼
+        check_callback_data_and_call(recive_callback_data)
     except Exception as e:
         err_msg = str(e)
         return make_err_response(err_msg)
@@ -1130,7 +1132,72 @@ def recive_callback():
         print(params)
         print('------- recive_callback_data -------')
         print(recive_callback_data)
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
         return make_succ_empty_response()
+
+def check_callback_data_and_call(recive_callback_data):
+    conn = None
+    cursor = None
+    try:
+        # 获取数据库链接
+        conn = create_conn()
+        # 获取游标
+        cursor = conn.cursor()
+
+        # 检查返回数据中，外呼的实际结果是否已成功，如果成功了，则不再重复呼叫
+        if int(recive_callback_data['serviceResult']) == 0:
+            pass
+        else:
+            # 外呼的实际结果并未成功，检查此报备单外呼总次数
+            sql = "SELECT COUNT(1) FROM t_a_call_feedback WHERE applyOrderNum = '%s' " % recive_callback_data['applyOrderNum']
+            cursor.execute(sql)
+            row = cursor.fetchone()
+            if row[0] < 4:
+                # 若此报备单外呼总次数未超过3，则继续外呼（等待15秒）
+                time.sleep(15)
+                # 获取外呼请求参数（最新）
+                sql_params = "SELECT * FROM t_a_call_log WHERE applyOrderNum = '%s' ORDER BY callLogId DESC" % recive_callback_data['applyOrderNum']
+                cursor.execute(sql_params)
+                call_params = cursor.fetchone()
+                # 发起外呼
+                url = 'http://123.56.67.182:19201/vms'
+                headers = {
+                    'Content-Type': 'application/json;charset=utf-8',
+                }
+                timestamp_str = datetime.now().strftime("%Y%m%d%H%M%S")
+                password_str = '300fd5c0-bbcf-4520-8b9f-6c5e1521acd2' + timestamp_str
+                data = {
+                    'uid': call_params['uid'],
+                    'serviceType': call_params['uid'],
+                    'timestamp': timestamp_str,
+                    'password': hashlib.md5(password_str.encode('utf-8')).hexdigest(),
+                    'callee': call_params['callee'],
+                    'playWay': 1,
+                    'playTimes': 1,
+                    'templateId': call_params['templateId'],
+                    'requestId': call_params['requestId'],
+                    'content': call_params['content']
+                }
+                print('------ data ------')
+                print(data)
+                result = requests.post(url, headers=headers, data=json.dumps(data))
+                print(result.content.decode('utf-8'))
+
+                # 将请求数据和返回数据写入DB
+                add_call_log(data,result)
+            else:
+                # 若此报备单外呼总次数已达3次，则停止外呼
+                pass
+    except Exception as e:
+        print(str(e))
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 @app.route('/api/call', methods=['POST'])
 def call():
@@ -1361,6 +1428,63 @@ def get_apply_info_with_call_number():
         if conn:
             conn.close()
     return make_succ_response(get_apply_info_with_call_number)
+
+@app.route('/api/get_apply_order_call_records', methods=['POST'])
+def get_apply_order_call_records():
+    conn = None
+    cursor = None
+    get_apply_order_call_records = ''
+    try:
+        print('get_apply_order_call_records start')
+        # 获取数据库链接
+        conn = create_conn()
+        # conn = pymysql.connect(host=config.db_address, user=config.username, passwd=config.password, database=config.database, port=config.port, charset='utf8')
+        # 获取请求体参数
+        params = request.get_json()
+        print(params)
+        # 获取游标
+        cursor = conn.cursor()
+        sql = (
+            " SELECT  ",
+            " success_records.* ",
+            ",total_records.* FROM ",
+            "(SELECT  ",
+            " count( 1 ) AS success_records_times ",
+            ",max( inviteTime ) AS success_record_latest_datetime ",
+            " FROM ",
+            " t_a_call_feedback ",
+            " WHERE ",
+            " applyOrderNum = '%(applyOrderNum)s' AND ",
+            " serviceResult = '%(serviceResult)s' ",
+            ") success_records, ",
+            "(SELECT  ",
+            " count( 1 ) AS total_records_times ",
+            ",max( inviteTime ) AS total_record_latest_datetime ",
+            " FROM ",
+            " t_a_call_feedback ",
+            " WHERE ",
+            " applyOrderNum = '%(applyOrderNum)s' ",
+            ") total_records "
+        )
+        args = {
+            'applyOrderNum': params['apply_order_num'],
+            'serviceResult': '0'
+        }
+        print(" ".join(sql))
+        cursor.execute(" ".join(sql), args)
+        row = cursor.fetchone()
+        print(row)
+        if row:
+            get_apply_order_call_records = row
+    except Exception as e:
+        print(str(e))
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+    return make_succ_response(get_apply_order_call_records)
+
 
 if __name__ == '__main__':
     pass
