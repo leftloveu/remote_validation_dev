@@ -1142,6 +1142,9 @@ def check_callback_data_and_call(recive_callback_data):
     conn = None
     cursor = None
     try:
+        print('------ check_callback_data_and_call --------')
+        print(recive_callback_data)
+        print(int(recive_callback_data['serviceResult']) == 0)
         # 获取数据库链接
         conn = create_conn()
         # 获取游标
@@ -1155,6 +1158,7 @@ def check_callback_data_and_call(recive_callback_data):
             sql = "SELECT COUNT(1) FROM t_a_call_feedback WHERE applyOrderNum = '%s' " % recive_callback_data['applyOrderNum']
             cursor.execute(sql)
             row = cursor.fetchone()
+            print('------ 外呼总次数：%s -------' % str(row[0]))
             if row[0] < 4:
                 # 若此报备单外呼总次数未超过3，则继续外呼（等待15秒）
                 time.sleep(15)
@@ -1181,7 +1185,7 @@ def check_callback_data_and_call(recive_callback_data):
                     'requestId': call_params['requestId'],
                     'content': call_params['content']
                 }
-                print('------ data ------')
+                print('------check_callback_data_and_call  data ------')
                 print(data)
                 result = requests.post(url, headers=headers, data=json.dumps(data))
                 print(result.content.decode('utf-8'))
