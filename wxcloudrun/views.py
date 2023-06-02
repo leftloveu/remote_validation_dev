@@ -1151,9 +1151,11 @@ def check_callback_data_and_call(recive_callback_data):
         cursor = conn.cursor()
 
         # 检查返回数据中，外呼的实际结果是否已成功，如果成功了，则不再重复呼叫
-        if int(recive_callback_data['serviceResult']) == 0:
+        # 被叫已接听
+        if recive_callback_data['endReason'] == '0' and recive_callback_data['sipCode'] == '0':
             pass
-        else:
+        # 被叫拒接或忙/被叫未接（有振铃）
+        if (recive_callback_data['endReason'] == '100000006' and recive_callback_data['sipCode'] == '500') or (recive_callback_data['endReason'] == '100000007' and recive_callback_data['sipCode'] == '603'):
             print('------ 外呼未成功 --------')
             # 外呼的实际结果并未成功，检查此报备单外呼总次数
             sql = "SELECT COUNT(1) AS total_call_times FROM t_a_call_feedback WHERE applyOrderNum = '%s' " % recive_callback_data['applyOrderNum']
