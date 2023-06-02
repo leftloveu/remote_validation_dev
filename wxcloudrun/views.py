@@ -1182,7 +1182,7 @@ def check_callback_data_and_call(recive_callback_data):
                 password_str = '300fd5c0-bbcf-4520-8b9f-6c5e1521acd2' + timestamp_str
                 data = {
                     'uid': call_params['uid'],
-                    'serviceType': call_params['uid'],
+                    'serviceType': 2,
                     'timestamp': timestamp_str,
                     'password': hashlib.md5(password_str.encode('utf-8')).hexdigest(),
                     'callee': call_params['callee'],
