@@ -1167,7 +1167,8 @@ def check_callback_data_and_call(recive_callback_data):
                 # 若此报备单外呼总次数未超过3，则继续外呼（等待15秒）
                 time.sleep(15)
                 # 获取外呼请求参数（最新）
-                sql_params = "SELECT * FROM t_a_call_log WHERE applyOrderNum = '%s' ORDER BY callLogId DESC" % recive_callback_data['applyOrderNum']
+                sql_params = "SELECT * FROM t_a_call_log WHERE applyOrderNum = %s ORDER BY callLogId DESC" % recive_callback_data['applyOrderNum']
+                print(sql_params)
                 cursor.execute(sql_params)
                 call_params = cursor.fetchone()
                 print('----- call_params ------')
