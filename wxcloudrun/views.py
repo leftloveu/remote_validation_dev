@@ -1128,8 +1128,6 @@ def recive_callback():
         err_msg = str(e)
         return make_err_response(err_msg)
     finally:
-        print('------- recive_callback_params -------')
-        print(params)
         print('------- recive_callback_data -------')
         print(recive_callback_data)
         if cursor:
@@ -1143,8 +1141,6 @@ def check_callback_data_and_call(recive_callback_data):
     cursor = None
     try:
         print('------ check_callback_data_and_call --------')
-        print(recive_callback_data)
-        print(int(recive_callback_data['serviceResult']) == 0)
         # 获取数据库链接
         conn = create_conn()
         # 获取游标
@@ -1156,25 +1152,18 @@ def check_callback_data_and_call(recive_callback_data):
             pass
         # 被叫拒接或忙/被叫未接（有振铃）
         if (recive_callback_data['endReason'] == '100000006' and recive_callback_data['sipCode'] == '500') or (recive_callback_data['endReason'] == '100000007' and recive_callback_data['sipCode'] == '603'):
-            print('------ 外呼未成功 --------')
             # 外呼的实际结果并未成功，检查此报备单外呼总次数
             sql = "SELECT COUNT(1) AS total_call_times FROM t_a_call_feedback WHERE applyOrderNum = '%s' " % recive_callback_data['applyOrderNum']
-            print(sql)
             cursor.execute(sql)
             row = cursor.fetchone()
-            print(row)
-            print('------ 外呼总次数：%s -------' % row['total_call_times'])
-            if int(row['total_call_times']) < 4:
-                print('------- 开始自动外呼 ------')
+            if int(row['total_call_times']) < 3:
+                print('------ 报备单%s自动外呼第%s次 --------' % (recive_callback_data['applyOrderNum'], int(row['total_call_times']) + 1))
                 # 若此报备单外呼总次数未超过3，则继续外呼（等待15秒）
                 time.sleep(15)
                 # 获取外呼请求参数（最新）
                 sql_params = "SELECT * FROM t_a_call_log WHERE applyOrderNum = %s ORDER BY callLogId DESC" % recive_callback_data['applyOrderNum']
-                print(sql_params)
                 cursor.execute(sql_params)
                 call_params = cursor.fetchone()
-                print('----- call_params ------')
-                print(call_params)
                 # 发起外呼
                 url = 'http://123.56.67.182:19201/vms'
                 headers = {
