@@ -1162,13 +1162,16 @@ def check_callback_data_and_call(recive_callback_data):
             row = cursor.fetchone()
             print(row)
             print('------ 外呼总次数：%s -------' % row['total_call_times'])
-            if row['total_call_times'] < 4:
+            if int(row['total_call_times']) < 4:
+                print('------- 开始自动外呼 ------')
                 # 若此报备单外呼总次数未超过3，则继续外呼（等待15秒）
                 time.sleep(15)
                 # 获取外呼请求参数（最新）
                 sql_params = "SELECT * FROM t_a_call_log WHERE applyOrderNum = '%s' ORDER BY callLogId DESC" % recive_callback_data['applyOrderNum']
                 cursor.execute(sql_params)
                 call_params = cursor.fetchone()
+                print('----- call_params ------')
+                print(call_params)
                 # 发起外呼
                 url = 'http://123.56.67.182:19201/vms'
                 headers = {
