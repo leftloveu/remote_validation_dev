@@ -1458,8 +1458,8 @@ def get_apply_order_call_records():
             " FROM ",
             " t_a_call_feedback ",
             " WHERE ",
-            " applyOrderNum = '%(applyOrderNum)s' AND ",
-            " serviceResult = '%(serviceResult)s' ",
+            " applyOrderNum = %(applyOrderNum)s AND ",
+            " serviceResult = %(serviceResult)s ",
             ") success_records, ",
             "(SELECT  ",
             " count( 1 ) AS total_records_times ",
@@ -1467,7 +1467,7 @@ def get_apply_order_call_records():
             " FROM ",
             " t_a_call_feedback ",
             " WHERE ",
-            " applyOrderNum = '%(applyOrderNum)s' ",
+            " applyOrderNum = %(applyOrderNum)s ",
             ") total_records "
         )
         args = {
