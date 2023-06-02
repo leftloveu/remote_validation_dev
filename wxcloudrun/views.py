@@ -1073,6 +1073,7 @@ def recive_callback():
             if key in params.keys():
                 recive_callback_data[key] = params[key]
         # 拼接数据写入DB
+        recive_callback_data['applyOrderNum'] = params['requestId'] if 'requestId' in params.keys() else None
         recive_callback_data['feedbackLogData'] = json.dumps(recive_callback_data)
         # 获取数据库链接
         conn = create_conn()
