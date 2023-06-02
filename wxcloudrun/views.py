@@ -875,6 +875,39 @@ def modify_apply_status():
             conn.close()
     return result
 
+@app.route('/api/modify_apply_status_in_camera_part', methods=['POST'])
+def modify_apply_status_in_camera_part():
+    conn = None
+    cursor = None
+    result = 'false'
+    try:
+        print('modify_apply_status_in_camera_part start')
+        # 获取数据库链接
+        conn = create_conn()
+        # 获取请求体参数
+        params = request.get_json()
+        print(params)
+        # 获取游标
+        cursor = conn.cursor()
+        sql = (
+            "UPDATE t_a_application SET ",
+            "apply_order_status = '%s' " % params['apply_order_status'],
+            "WHERE ",
+            "apply_order_num = '%s' " % params['apply_order_num']
+            )
+        print(" ".join(sql))
+        cursor.execute(" ".join(sql))
+        conn.commit()
+        result = 'true'
+    except Exception as e:
+        print(str(e))
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+    return result
+
 @app.route('/api/save_adjust_comment', methods=['POST'])
 def save_adjust_comment():
     conn = None
@@ -1040,9 +1073,54 @@ def recive_callback():
             if key in params.keys():
                 recive_callback_data[key] = params[key]
         # 拼接数据写入DB
+        recive_callback_data['feedbackLogData'] = json.dumps(recive_callback_data)
         # 获取数据库链接
-        # conn = create_conn()
-        # sql_1_list = ["INSERT INTO t_a_application ("]
+        conn = create_conn()
+        # 获取游标
+        cursor = conn.cursor()
+
+        sql = [
+            " INSERT INTO t_a_call_feedback ( ",
+            " feedbackLogData ",
+            ",applyOrderNum ",
+            ",uid ",
+            ",serviceId ",
+            ",requestId ",
+            ",callId ",
+            ",caller ",
+            ",callee ",
+            ",inviteTime ",
+            ",ringTime ",
+            ",answerTime ",
+            ",disconnectTime ",
+            ",userKey ",
+            ",serviceDuration ",
+            ",serviceResult ",
+            ",endReason ",
+            ",sipCode ",
+            ") VALUES ( ",
+            " %(feedbackLogData)s ",
+            ",%(applyOrderNum)s ",
+            ",%(uid)s ",
+            ",%(serviceId)s ",
+            ",%(requestId)s ",
+            ",%(callId)s ",
+            ",%(caller)s ",
+            ",%(callee)s ",
+            ",%(inviteTime)s ",
+            ",%(ringTime)s ",
+            ",%(answerTime)s ",
+            ",%(disconnectTime)s ",
+            ",%(userKey)s ",
+            ",%(serviceDuration)s ",
+            ",%(serviceResult)s ",
+            ",%(endReason)s ",
+            ",%(sipCode)s ",
+            ") ",
+        ]
+        print(" ".join(sql))
+        cursor.execute(" ".join(sql), recive_callback_data)
+        conn.commit()
     except Exception as e:
         err_msg = str(e)
         return make_err_response(err_msg)
@@ -1055,51 +1133,125 @@ def recive_callback():
 
 @app.route('/api/call', methods=['POST'])
 def call():
-    # 获取请求体参数
-    params = request.get_json()
+    try:
+        # 获取请求体参数
+        params = request.get_json()
+        print('call start')
 
-    content = '你好，车牌号为%s的超限运输车辆在%s收费站申请验证，请及时处理！' % (params['plate_number'], params['toll_station'])
+        content = '你好，车牌号为%s的超限运输车辆在%s收费站申请验证，请及时处理！' % (params['plate_number'], params['toll_station'])
+        url = 'http://123.56.67.182:19201/vms'
+        headers = {
+            'Content-Type': 'application/json;charset=utf-8',
+        }
+        timestamp_str = datetime.now().strftime("%Y%m%d%H%M%S")
+        password_str = '300fd5c0-bbcf-4520-8b9f-6c5e1521acd2' + timestamp_str
+        data = {
+            'uid': '75e07e8c-89db-4492-b946-9d8a30570e37',
+            'serviceType': 2,
+            'timestamp': timestamp_str,
+            'password': hashlib.md5(password_str.encode('utf-8')).hexdigest(),
+            'callee': params['callee'],
+            'playWay': 1,
+            'playTimes': 1,
+            'templateId': 'ef32276a-9495-4079-8887-9665754632cb',
+            'requestId': params['requestId'],
+            'content': content
+        }
+        print('------ data ------')
+        print(data)
+        result = requests.post(url, headers=headers, data=json.dumps(data))
+        print(result.content.decode('utf-8'))
 
-    url = 'http://123.56.67.182:19201/vms'
+        # 将请求数据和返回数据写入DB
+        add_call_log(data,result)
+    except Exception as e:
+        return make_err_response(str(e))
+    finally:
+        return make_succ_response(result.content.decode('utf-8'))
 
-    headers = {
-        'Content-Type': 'application/json;charset=utf-8',
-    }
+def add_call_log(data, result):
+    conn = None
+    cursor = None
+    try:
+        # 获取数据库链接
+        conn = create_conn()
+        # 获取游标
+        cursor = conn.cursor()
 
-    timestamp_str = datetime.now().strftime("%Y%m%d%H%M%S")
-
-    password_str = '300fd5c0-bbcf-4520-8b9f-6c5e1521acd2' + timestamp_str
-
-    data = {
-        'uid': '75e07e8c-89db-4492-b946-9d8a30570e37',
-        'serviceType': 2,
-        'timestamp': timestamp_str,
-        'password': hashlib.md5(password_str.encode('utf-8')).hexdigest(),
-        'callee': params['callee'],
-        'playWay': 1,
-        'playTimes': 1,
-        'templateId': 'ef32276a-9495-4079-8887-9665754632cb',
-        'requestId': params['requestId'],
-        'content': content
-    }
-
-    json_data = json.dumps(data)
-    
-    print('------- url -------')
-    print(url)
-    print('------- headers -------')
-    print(headers)
-    print('------- data -------')
-    print(data)
-    print(type(data))
-    print('------- json_data -------')
-    print(json_data)
-    print(type(json_data))
-
-    result = requests.post(url, headers=headers, data=json_data)
-    print('------- response -------')
-    print(result.content.decode('utf-8'))
-    return make_succ_empty_response()
+        sql = [
+            " INSERT INTO t_a_call_log ( ",
+            " callData ",
+            ",callResponseData ",
+            ",applyOrderNum ",
+            ",uid ",
+            ",serviceType ",
+            ",callTimestamp ",
+            ",callPassword ",
+            ",caller ",
+            ",callee ",
+            ",playWay ",
+            ",playTimes ",
+            ",ringId ",
+            ",templateId ",
+            ",requestId ",
+            ",content ",
+            ",keyTimeout ",
+            ",keyList ",
+            ",respCode ",
+            ",serviceId ",
+            ") VALUES ( ",
+            " %(callData)s ",
+            ",%(callResponseData)s ",
+            ",%(applyOrderNum)s ",
+            ",%(uid)s ",
+            ",%(serviceType)s ",
+            ",%(callTimestamp)s ",
+            ",%(callPassword)s ",
+            ",%(caller)s ",
+            ",%(callee)s ",
+            ",%(playWay)s ",
+            ",%(playTimes)s ",
+            ",%(ringId)s ",
+            ",%(templateId)s ",
+            ",%(requestId)s ",
+            ",%(content)s ",
+            ",%(keyTimeout)s ",
+            ",%(keyList)s ",
+            ",%(respCode)s ",
+            ",%(serviceId)s ",
+            ") ",
+        ]
+        args = {
+             'callData': json.dumps(data)
+            ,'callResponseData': result.content.decode('utf-8')
+            ,'applyOrderNum': data['requestId']
+            ,'uid': data['uid']
+            ,'serviceType': data['serviceType']
+            ,'callTimestamp': data['timestamp']
+            ,'callPassword': data['password']
+            ,'caller': data['password']
+            ,'callee': data['callee']
+            ,'playWay': data['playWay']
+            ,'playTimes': data['playTimes']
+            ,'ringId': data['ringId'] if 'ringId' in data.keys() else None
+            ,'templateId': data['templateId'] if 'templateId' in data.keys() else None
+            ,'requestId': data['requestId']
+            ,'content': data['content'].encode('utf-8')
+            ,'keyTimeout': data['keyTimeout'] if 'keyTimeout' in data.keys() else None
+            ,'keyList': data['keyList'] if 'keyList' in data.keys() else None
+            ,'respCode': json.loads(result.content.decode('utf-8'))['respCode']
+            ,'serviceId': json.loads(result.content.decode('utf-8'))['serviceId']
+        }
+        print(" ".join(sql))
+        cursor.execute(" ".join(sql), args)
+        conn.commit()
+    except Exception as e:
+        print(str(e))
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 @app.route('/api/valid_officer', methods=['POST'])
 def valid_officer():
@@ -1164,6 +1316,50 @@ def unbind_officer():
         if conn:
             conn.close()
     return result
+
+@app.route('/api/get_apply_info_with_call_number', methods=['POST'])
+def get_apply_info_with_call_number():
+    conn = None
+    cursor = None
+    get_apply_info_with_call_number = ''
+    try:
+        print('get_apply_info_with_call_number start')
+        # 获取数据库链接
+        conn = create_conn()
+        # conn = pymysql.connect(host=config.db_address, user=config.username, passwd=config.password, database=config.database, port=config.port, charset='utf8')
+        # 获取请求体参数
+        params = request.get_json()
+        print(params)
+        # 获取游标
+        cursor = conn.cursor()
+        sql = (
+            " select ",
+            " office.duty_phone ",
+            ",application.apply_order_num ",
+            ",application.plate_number ",
+            ",application.appoint_verification_location ",
+            " from ",
+            " t_a_application application, ",
+            " t_t_toll_station toll_station, ",
+            " t_u_office_account office ",
+            " where application.apply_order_num = %s " % params['apply_order_num'],
+            " and application.toll_station_id = toll_station.toll_station_id ",
+            " and toll_station.office_id = office.office_id "
+        )
+        print(" ".join(sql))
+        cursor.execute(" ".join(sql))
+        row = cursor.fetchone()
+        print(row)
+        if row:
+            get_apply_info_with_call_number = row
+    except Exception as e:
+        print(str(e))
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+    return make_succ_response(get_apply_info_with_call_number)
 
 if __name__ == '__main__':
     pass
