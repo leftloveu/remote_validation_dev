@@ -1154,12 +1154,15 @@ def check_callback_data_and_call(recive_callback_data):
         if int(recive_callback_data['serviceResult']) == 0:
             pass
         else:
+            print('------ 外呼未成功 --------')
             # 外呼的实际结果并未成功，检查此报备单外呼总次数
-            sql = "SELECT COUNT(1) FROM t_a_call_feedback WHERE applyOrderNum = '%s' " % recive_callback_data['applyOrderNum']
+            sql = "SELECT COUNT(1) AS total_call_times FROM t_a_call_feedback WHERE applyOrderNum = '%s' " % recive_callback_data['applyOrderNum']
+            print(sql)
             cursor.execute(sql)
             row = cursor.fetchone()
-            print('------ 外呼总次数：%s -------' % str(row[0]))
-            if row[0] < 4:
+            print(row)
+            print('------ 外呼总次数：%s -------' % row['total_call_times'])
+            if row['total_call_times'] < 4:
                 # 若此报备单外呼总次数未超过3，则继续外呼（等待15秒）
                 time.sleep(15)
                 # 获取外呼请求参数（最新）
@@ -1497,3 +1500,17 @@ if __name__ == '__main__':
     # print(round(time.time() * 1000))
     # current_time = datetime.now().strftime("%Y%m%d%H%M%S")
     # print(current_time)
+    # conn = pymysql.connect(
+    #     host='sh-cynosdbmysql-grp-hsc16e2c.sql.tencentcdb.com',
+    #     user='root',
+    #     passwd='kqSJ9b7J',
+    #     database='remote_validation',
+    #     port=22114,
+    #     charset='utf8',
+    #     cursorclass=pymysql.cursors.DictCursor)
+    # cursor = conn.cursor()
+    # apply_order_num = '1684683667557'
+    # sql = "SELECT COUNT(1) AS total_call_times FROM t_a_call_feedback WHERE applyOrderNum = '%s' " % apply_order_num
+    # cursor.execute(sql)
+    # row = cursor.fetchone()
+    # print(row['total_call_times'])
