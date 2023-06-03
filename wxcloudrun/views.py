@@ -410,7 +410,7 @@ def get_valid_info_list_officer():
             "a.user_openid = '%s'" % params['openid'],
             "AND a.user_associated_account = b.office_account ",
             "AND b.office_id = c.office_id) ",
-            "AND d.apply_order_status = 2 ",
+            # "AND d.apply_order_status = 2 ",
             "order by d.apply_order_submit_time desc "
         )
         print(" ".join(sql))
