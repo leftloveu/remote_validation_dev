@@ -1178,7 +1178,7 @@ def check_callback_data_and_call(recive_callback_data):
                     'password': hashlib.md5(password_str.encode('utf-8')).hexdigest(),
                     'callee': call_params['callee'],
                     'playWay': 1,
-                    'playTimes': 1,
+                    'playTimes': 2,
                     'templateId': call_params['templateId'],
                     'requestId': call_params['requestId'],
                     'content': call_params['content']
@@ -1222,7 +1222,7 @@ def call():
             'password': hashlib.md5(password_str.encode('utf-8')).hexdigest(),
             'callee': params['callee'],
             'playWay': 1,
-            'playTimes': 1,
+            'playTimes': 2,
             'templateId': 'ef32276a-9495-4079-8887-9665754632cb',
             'requestId': params['requestId'],
             'content': content
