@@ -1,0 +1,258 @@
+{% extends "admin/home.html" %}
+
+{% block headers%}
+    <script src="/static/js/jquery-1.12.4.min.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            //当容器加载完成，对容器调用工具函数
+            $('#start_datetime').datetimepicker({
+                language:'zh-CN',       //语言
+                format:'yyyy-mm-dd hh:ii',    //日期的格式
+                minView:'hour',        //可以选择的最小视图
+                initialDate:new Date(), //初始化显示的日期
+                autoclose:true,         //设置选择完日期或者时间之后，日否自动关闭日历
+                todayBtn:true,          //设置自动显示为今天
+                clearBtn:true           //设置是否清空按钮，默认为false
+            });
+
+            $('#end_datetime').datetimepicker({
+                language:'zh-CN',       //语言
+                format:'yyyy-mm-dd hh:ii',    //日期的格式
+                minView:'hour',        //可以选择的最小视图
+                initialDate:new Date(), //初始化显示的日期
+                autoclose:true,         //设置选择完日期或者时间之后，日否自动关闭日历
+                todayBtn:true,          //设置自动显示为今天
+                clearBtn:true           //设置是否清空按钮，默认为false
+            });
+
+        });
+
+        function clear_conditions(){
+            location.href = '/admin_manage/application_manage';
+        }
+
+        function GetRequest() {
+            var url = location.search; //获取url中"?"符后的字串
+            var theRequest = {};
+            if (url.indexOf("?") != -1) {
+                var str = url.substr(1);
+                strs = str.split("&");
+                for(var i = 0; i < strs.length; i ++) {
+                    theRequest[strs[i].split("=")[0]]= decodeURIComponent(strs[i].split("=")[1]);
+                }
+            }
+            return theRequest
+        }
+
+        function goto_start_page() {
+            // 获取URL中的参数
+            var params = GetRequest();
+            // 将page的值赋为1
+            params['page'] = '1';
+            var url_params_str = "";
+            for(key in params){
+                url_params_str = url_params_str + "&" + key + "=" + params[key]
+            }
+            var new_url_params_str = url_params_str.slice(1);
+            location.href = "/admin_manage/application_manage" + "?" + new_url_params_str;
+        }
+
+        function goto_end_page(total_page) {
+            // 获取URL中的参数
+            var params = GetRequest();
+            // 将page的值赋为total_page
+            params['page'] = total_page;
+
+            var url_params_str = "";
+            for(key in params){
+                url_params_str = url_params_str + "&" + key + "=" + params[key]
+            }
+            var new_url_params_str = url_params_str.slice(1);
+            location.href = "/admin_manage/application_manage" + "?" + new_url_params_str;
+        }
+
+        function goto_last_page(current_page) {
+            // 获取URL中的参数
+            var params = GetRequest();
+
+            if(parseInt(current_page) - 1 < 1){
+                alert('当前已是第一页');
+            }
+            else{
+                params['page'] = current_page - 1;
+                var url_params_str = "";
+                for(key in params){
+                    url_params_str = url_params_str + "&" + key + "=" + params[key]
+                }
+                var new_url_params_str = url_params_str.slice(1);
+                location.href = "/admin_manage/application_manage" + "?" + new_url_params_str;
+            }
+        }
+
+        function goto_next_page(current_page, total_page) {
+            // 获取URL中的参数
+            var params = GetRequest();
+
+            if(parseInt(total_page) - parseInt(current_page) < 1){
+                alert('当前已是最后一页');
+            }
+            else{
+                params['page'] = current_page + 1;
+                var url_params_str = "";
+                for(key in params){
+                    url_params_str = url_params_str + "&" + key + "=" + params[key]
+                }
+                var new_url_params_str = url_params_str.slice(1);
+                location.href = "/admin_manage/application_manage" + "?" + new_url_params_str;
+            }
+        }
+
+
+    </script>
+{% endblock %}
+
+{% block page_content %}
+
+    <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
+      <form style="margin-top: 1rem; font-size: 0.01rem">
+          <div class="form-row">
+            <div class="form-group col-md-2">
+              <label for="apply_order_num">申报单流水号</label>
+              <input type="text" class="form-control form-control-sm" id="apply_order_num" name="apply_order_num" value="{{ dict_item['apply_order_num'] }}">
+            </div>
+            <div class="form-group col-md-2">
+              <label for="plate_number">申报车牌号</label>
+              <input type="text" class="form-control form-control-sm" id="plate_number" name="plate_number" value="{{ dict_item['plate_number'] }}">
+            </div>
+            <div class="form-group col-md-2">
+              <label for="charge_department">承运单位名称</label>
+              <input type="text" class="form-control form-control-sm" id="charge_department" name="charge_department" value="{{ dict_item['charge_department'] }}">
+            </div>
+            <div class="form-group col-md-2">
+              <label for="vehicle_department">车属单位名称</label>
+              <input type="text" class="form-control form-control-sm" id="vehicle_department" name="vehicle_department" value="{{ dict_item['vehicle_department'] }}">
+            </div>
+            <div class="form-group col-md-2">
+              <label for="appoint_verification_location">预约验证地点</label>
+              <input type="text" class="form-control form-control-sm" id="appoint_verification_location" name="appoint_verification_location" value="{{ dict_item['appoint_verification_location'] }}">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-md-2">
+              <label for="start_datetime">通行开始时间</label>
+              <input type="text" class="form-control form-control-sm" id="start_datetime" name="start_datetime" value="{{ dict_item['start_datetime'] }}">
+            </div>
+            <div class="form-group col-md-2">
+              <label for="end_datetime">通行结束时间</label>
+              <input type="text" class="form-control form-control-sm" id="end_datetime" name="end_datetime" value="{{ dict_item['end_datetime'] }}">
+            </div>
+            <div class="form-group col-md-2">
+              <label for="apply_order_status">申报单状态</label>
+              <select id="apply_order_status" class="form-control form-control-sm" name="apply_order_status">
+                  <option value="-1">--请选择--</option>
+                  <option value="0">草稿</option>
+                  <option value="1">拟验证</option>
+                  <option value="2">验证中</option>
+                  <option value="3">验证通过</option>
+                  <option value="4">验证不通过</option>
+                  <option value="5">已取消</option>
+              </select>
+            </div>
+            <div class="form-group col-md-2">
+              <label for="verification_officer_name">审批人员姓名</label>
+              <input type="text" class="form-control form-control-sm" id="verification_officer_name" name="verification_officer_name" value="{{ dict_item['verification_officer_name'] }}">
+            </div>
+            <div class="form-group col-md-2">
+                <label for="inputPassword4" style="visibility: hidden">操作区</label>
+                <div>
+                    <button type="submit" class="btn btn-primary btn-sm">查询</button>
+                    <button type="button" class="btn btn-info btn-sm" onclick="clear_conditions();">重置</button>
+{#                    <button type="submit" class="btn btn-warning btn-sm">导出</button>#}
+                </div>
+            </div>
+          </div>
+      </form>
+
+    </main>
+
+    <div class="table-responsive col-md-9 ml-sm-auto col-lg-10 px-md-4">
+          <table class="table table-hover table-sm" style="width: 150rem; font-size: 0.01rem">
+            <thead>
+                <tr>
+                    <th scope="col">申报单号</th>
+                    <th scope="col">申报单状态</th>
+                    <th scope="col">检查时间</th>
+                    <th scope="col">牵引车车牌</th>
+                    <th scope="col">挂车车牌</th>
+                    <th scope="col">通行开始时间</th>
+                    <th scope="col">通行结束时间</th>
+                    <th scope="col">审批路线</th>
+                    <th scope="col">车属单位</th>
+                    <th scope="col">护送方案是否一致</th>
+                    <th scope="col">经办人</th>
+                    <th scope="col">检查收费站</th>
+                    <th scope="col">通行证号</th>
+                    <th scope="col">实际通行时间</th>
+                    <th scope="col">实际线路</th>
+                    <th scope="col">承运单位</th>
+                    <th scope="col">监护车车牌号</th>
+                    <th scope="col">共运车次</th>
+                    <th scope="col">联系方式</th>
+                    <th scope="col">其他情况</th>
+                </tr>
+              </thead>
+              <tbody>
+              {% if application_list %}
+                  {% for application in application_list %}
+                      <tr>
+                          <td>{{ application['apply_order_num'] or "" }}</td> {# 申报单号 #}
+                          <td>
+                              {% if application['apply_order_status'] == 0 %}草稿{% endif %}
+                              {% if application['apply_order_status'] == 1 %}拟验证{% endif %}
+                              {% if application['apply_order_status'] == 2 %}验证中{% endif %}
+                              {% if application['apply_order_status'] == 3 %}验证通过{% endif %}
+                              {% if application['apply_order_status'] == 4 %}验证不通过{% endif %}
+                              {% if application['apply_order_status'] == 5 %}已取消{% endif %}
+                          </td>
+                          <td>{{ application['verification_datetime'] or "" }}</td> {# 检查时间 #}
+                          <td>{{ application['plate_number'] or "" }}</td> {# 车牌号码-牵引车 #}
+                          <td></td> {# 车牌号码-挂车 #}
+                          <td>{{ application['start_datetime'] or "" }}</td> {# 通行开始时间 #}
+                          <td>{{ application['end_datetime'] or "" }}</td> {# 通行结束时间 #}
+                          <td style="width: 200px">{{ application['approved_path'] or "" }}</td> {# 审批路线 #}
+                          <td>{{ application['vehicle_department'] or "" }}</td> {# 车属单位 #}
+                          <td></td> {# 护送方案是否一致 #}
+                          <td>{{ application['verification_officer_name'] or "" }}</td> {# 经办人 #}
+                          <td>{{ application['appoint_verification_location'] or "" }}</td> {# 检查收费站 #}
+                          <td></td> {# 通行证号 #}
+                          <td></td> {# 实际通行时间 #}
+                          <td style="width: 200px">{{ application['approved_path'] or "" }}</td> {# 实际线路 #}
+                          <td>{{ application['charge_department'] or "" }}</td> {# 承运单位 #}
+                          {% if application['escort_plate_number_2'] %} {# 监护车车牌号 #}
+                              <td>{{ application['escort_plate_number_1'] }}, {{ application['escort_plate_number_2'] }}</td>
+                          {% else %}
+                              <td>{{ application['escort_plate_number_1'] }}</td>
+                          {% endif %}
+                          <td>{{ application['plate_transport_time'] or "" }}</td> {# 共运车次 #}
+                          <td>{{ application['driver_mobile_number'] or "" }}</td> {# 联系方式 #}
+                          <td></td> {# 其他情况 #}
+                      </tr>
+                  {% endfor %}
+              {% endif %}
+              </tbody>
+          </table>
+      </div>
+
+    <nav aria-label="Page navigation example" class="col-md-9 ml-sm-auto col-lg-10 px-md-4" style="margin-top: 20px">
+      <ul class="pagination pagination-sm">
+          <text style="line-height: 200%">共 {{ row_count }} 条记录，当前第 {{ page }} / {{ total_page }} 页&nbsp;&nbsp;</text>
+          <li class="page-item"><a class="page-link" onclick="goto_start_page();">首页</a></li>
+          <li class="page-item"><a class="page-link" onclick="goto_last_page({{ page }});">上一页</a></li>
+          <li class="page-item"><a class="page-link" onclick="goto_next_page({{ page }}, {{ total_page }});">下一页</a></li>
+          <li class="page-item"><a class="page-link" onclick="goto_end_page({{ total_page }});">尾页</a></li>
+      </ul>
+    </nav>
+
+{% endblock %}
