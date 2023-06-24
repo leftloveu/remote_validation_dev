@@ -7,6 +7,7 @@ from flask import redirect
 # 定义blueprints
 blueprints = (
     ('wxcloudrun.admin.admin_manage_views.admin_manage_bp', '/admin_manage'),
+    ('wxcloudrun.application.application_manage_views.application_manage_bp', '/application_manage'),
     )
 
 # 注册blueprints

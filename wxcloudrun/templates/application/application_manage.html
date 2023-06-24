@@ -1,10 +1,25 @@
 {% extends "admin/home.html" %}
 
 {% block headers%}
-    <script src="/static/js/jquery-1.12.4.min.js"></script>
+{#    <script src="/static/js/jquery-1.12.4.min.js"></script>#}
+    <script src="/static/js/jquery-3.7.0.min.js"></script>
+    <link href="/static/css/bootstrap-table.min.css" rel="stylesheet">
+    <link href="/static/css/bootstrap-table-fixed-columns.min.css" rel="stylesheet">
+
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/bootstrap-table.min.js"></script>
+    <script src="/static/js/bootstrap-table-fixed-columns.min.js"></script>
 
     <script type="text/javascript">
-        $(function () {
+
+        function show_detail(apply_order_num){
+            redirect_url = '/application_manage/show_detail' + "?apply_order_num=" + apply_order_num;
+            window.open(redirect_url);
+        }
+
+
+
+        $(function(){
             //当容器加载完成，对容器调用工具函数
             $('#start_datetime').datetimepicker({
                 language:'zh-CN',       //语言
@@ -114,11 +129,12 @@
 
 {% block page_content %}
 
-    <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
-      <form style="margin-top: 1rem; font-size: 0.01rem">
+    <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-md-4">
+      <form style="margin-top: 1rem; font-size: 0.6rem">
+          {# 基于开发环境，1rem = 16px #}
           <div class="form-row">
             <div class="form-group col-md-2">
-              <label for="apply_order_num">申报单流水号</label>
+              <label for="apply_order_num">申报单号</label>
               <input type="text" class="form-control form-control-sm" id="apply_order_num" name="apply_order_num" value="{{ dict_item['apply_order_num'] }}">
             </div>
             <div class="form-group col-md-2">
@@ -177,12 +193,13 @@
 
     </main>
 
-    <div class="table-responsive col-md-9 ml-sm-auto col-lg-10 px-md-4">
-          <table class="table table-hover table-sm" style="width: 150rem; font-size: 0.01rem">
+    <div class="table-responsive col-md-10 ml-sm-auto col-lg-10 px-md-4">
+          <table class="table table-hover table-sm" style="font-size: 0.6rem; width: 150rem">
             <thead>
                 <tr>
                     <th scope="col">申报单号</th>
                     <th scope="col">申报单状态</th>
+                    <th scope="col">审核意见</th>
                     <th scope="col">检查时间</th>
                     <th scope="col">牵引车车牌</th>
                     <th scope="col">挂车车牌</th>
@@ -201,14 +218,15 @@
                     <th scope="col">共运车次</th>
                     <th scope="col">联系方式</th>
                     <th scope="col">其他情况</th>
+                    <th scope="col">操作区</th>
                 </tr>
               </thead>
               <tbody>
               {% if application_list %}
                   {% for application in application_list %}
                       <tr>
-                          <td>{{ application['apply_order_num'] or "" }}</td> {# 申报单号 #}
-                          <td>
+                          <td style="width: 4%;">{{ application['apply_order_num'] or "" }}</td>
+                          <td style="width: 4%;">
                               {% if application['apply_order_status'] == 0 %}草稿{% endif %}
                               {% if application['apply_order_status'] == 1 %}拟验证{% endif %}
                               {% if application['apply_order_status'] == 2 %}验证中{% endif %}
@@ -216,36 +234,43 @@
                               {% if application['apply_order_status'] == 4 %}验证不通过{% endif %}
                               {% if application['apply_order_status'] == 5 %}已取消{% endif %}
                           </td>
-                          <td>{{ application['verification_datetime'] or "" }}</td> {# 检查时间 #}
-                          <td>{{ application['plate_number'] or "" }}</td> {# 车牌号码-牵引车 #}
-                          <td></td> {# 车牌号码-挂车 #}
-                          <td>{{ application['start_datetime'] or "" }}</td> {# 通行开始时间 #}
-                          <td>{{ application['end_datetime'] or "" }}</td> {# 通行结束时间 #}
-                          <td style="width: 200px">{{ application['approved_path'] or "" }}</td> {# 审批路线 #}
-                          <td>{{ application['vehicle_department'] or "" }}</td> {# 车属单位 #}
-                          <td></td> {# 护送方案是否一致 #}
-                          <td>{{ application['verification_officer_name'] or "" }}</td> {# 经办人 #}
-                          <td>{{ application['appoint_verification_location'] or "" }}</td> {# 检查收费站 #}
-                          <td></td> {# 通行证号 #}
-                          <td></td> {# 实际通行时间 #}
-                          <td style="width: 200px">{{ application['approved_path'] or "" }}</td> {# 实际线路 #}
-                          <td>{{ application['charge_department'] or "" }}</td> {# 承运单位 #}
-                          {% if application['escort_plate_number_2'] %} {# 监护车车牌号 #}
-                              <td>{{ application['escort_plate_number_1'] }}, {{ application['escort_plate_number_2'] }}</td>
+                          <td style="width: 4%;">{{ application['adjust_comment'] or "" }}</td>
+                          <td style="width: 4%;">{{ application['verification_datetime'] or "" }}</td>
+                          <td style="width: 4%;">{{ application['plate_number'] or "" }}</td>
+                          <td style="width: 4%;"></td>
+                          <td style="width: 4%;">{{ application['start_datetime'] or "" }}</td>
+                          <td style="width: 4%;">{{ application['end_datetime'] or "" }}</td>
+                          <td style="width: 4%;">{{ application['approved_path'] or "" }}</td>
+                          <td style="width: 4%;">{{ application['vehicle_department'] or "" }}</td>
+                          <td style="width: 4%;"></td>
+                          <td style="width: 4%;">{{ application['verification_officer_name'] or "" }}</td>
+                          <td style="width: 4%;">{{ application['appoint_verification_location'] or "" }}</td>
+                          <td style="width: 4%;"></td>
+                          <td style="width: 4%;"></td>
+                          <td style="width: 4%;">{{ application['approved_path'] or "" }}</td>
+                          <td style="width: 4%;">{{ application['charge_department'] or "" }}</td>
+                          {% if application['escort_plate_number_2'] %}
+                              <td style="width: 4%;">{{ application['escort_plate_number_1'] }}, {{ application['escort_plate_number_2'] }}</td>
                           {% else %}
-                              <td>{{ application['escort_plate_number_1'] }}</td>
+                              <td style="width: 4%;">{{ application['escort_plate_number_1'] }}</td>
                           {% endif %}
-                          <td>{{ application['plate_transport_time'] or "" }}</td> {# 共运车次 #}
-                          <td>{{ application['driver_mobile_number'] or "" }}</td> {# 联系方式 #}
-                          <td></td> {# 其他情况 #}
+                          <td style="width: 4%;">{{ application['plate_transport_time'] or "" }}</td>
+                          <td style="width: 4%;">{{ application['driver_mobile_number'] or "" }}</td>
+                          <td style="width: 4%;"></td>
+                          <td style="width: 4%;">
+                              <button type="button" class="btn btn-info btn-sm" onclick="show_detail({{ application['apply_order_num'] }})">详情</button>
+                          </td>
                       </tr>
                   {% endfor %}
               {% endif %}
               </tbody>
           </table>
-      </div>
 
-    <nav aria-label="Page navigation example" class="col-md-9 ml-sm-auto col-lg-10 px-md-4" style="margin-top: 20px">
+    </div>
+
+
+
+    <nav aria-label="Page navigation example" class="col-md-10 ml-sm-auto col-lg-10 px-md-4" style="margin-top: 20px">
       <ul class="pagination pagination-sm">
           <text style="line-height: 200%">共 {{ row_count }} 条记录，当前第 {{ page }} / {{ total_page }} 页&nbsp;&nbsp;</text>
           <li class="page-item"><a class="page-link" onclick="goto_start_page();">首页</a></li>

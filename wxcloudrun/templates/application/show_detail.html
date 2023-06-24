@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+    <meta name="generator" content="Hugo 0.101.0">
+    <title>大件运输车远程验证系统管理平台</title>
+    <link rel="icon" href="/static/image/logo.png">
+
+    <link rel="canonical" href="https://getbootstrap.com/docs/4.6/examples/dashboard/">
+
+    <!-- Bootstrap core CSS -->
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+      .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+      .file_div {
+          width: 65rem;
+      }
+      .file_image {
+          max-height: 35rem;
+          max-width: 60rem;
+          float: left;
+          margin-left: 0.5rem;
+          margin-top: 0.5rem;
+      }
+
+      @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
+        }
+      }
+    </style>
+
+
+    <!-- Custom styles for this template -->
+    <link href="/static/css/dashboard.css" rel="stylesheet">
+
+      <script type="text/javascript">
+          function show_original(file_original_url) {
+              window.open(file_original_url);
+          }
+      </script>
+  </head>
+  <body>
+
+<nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+  <a class="navbar-brand col-md-2 col-lg-2 mr-0 px-3" href="#">申报单上传文件查验</a>
+  <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-toggle="collapse" data-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search" style="visibility: hidden;">
+    {% if session['user_info'] %}
+        <ul class="navbar-nav px-3">
+            <li class="nav-item text-nowrap">
+                <a class="nav-link" href="" disabled="true" style="pointer-events: none;">当前用户：{{session['user_info']['user_name']}}</a>
+            </li>
+        </ul>
+    {% endif %}
+</nav>
+
+<div class="container-fluid">
+  <div class="row">
+    <nav id="sidebarMenu" class="col-md-2 col-lg-2 d-md-block bg-light sidebar collapse">
+      <div class="sidebar-sticky pt-3">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                {% if session['show_detail_current_page'] == 'home' %}
+                  <a class="nav-link active" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=home">
+                      <span data-feather="home"></span>
+                      首页
+                  </a>
+                {% else %}
+                  <a class="nav-link" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=home">
+                      <span data-feather="home"></span>
+                      首页
+                  </a>
+                {% endif %}
+            </li>
+
+            <li class="nav-item">
+                {% if session['show_detail_current_page'] == 'driver_id_license' %}
+                  <a class="nav-link active" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=driver_id_license">
+                      <span data-feather="image"></span>
+                      司机身份证
+                  </a>
+                {% else %}
+                  <a class="nav-link" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=driver_id_license">
+                      <span data-feather="image"></span>
+                      司机身份证
+                  </a>
+                {% endif %}
+            </li>
+
+            <li class="nav-item">
+                {% if session['show_detail_current_page'] == 'driver_driver_license' %}
+                  <a class="nav-link active" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=driver_driver_license">
+                      <span data-feather="image"></span>
+                      司机驾驶证
+                  </a>
+                {% else %}
+                  <a class="nav-link" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=driver_driver_license">
+                      <span data-feather="image"></span>
+                      司机驾驶证
+                  </a>
+                {% endif %}
+            </li>
+
+            <li class="nav-item">
+               {% if session['show_detail_current_page'] == 'vehicle_license' %}
+                  <a class="nav-link active" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=vehicle_license">
+                      <span data-feather="image"></span>
+                      车辆行驶证
+                  </a>
+                {% else %}
+                  <a class="nav-link" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=vehicle_license">
+                      <span data-feather="image"></span>
+                      车辆行驶证
+                  </a>
+                {% endif %}
+            </li>
+
+            <li class="nav-item">
+                {% if session['show_detail_current_page'] == 'over_limit_license' %}
+                  <a class="nav-link active" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=over_limit_license">
+                      <span data-feather="image"></span>
+                      超限运输证
+                  </a>
+                {% else %}
+                  <a class="nav-link" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=over_limit_license">
+                      <span data-feather="image"></span>
+                      超限运输证
+                  </a>
+                {% endif %}
+            </li>
+
+            <li class="nav-item">
+                {% if session['show_detail_current_page'] == 'road_operating_license' %}
+                  <a class="nav-link active" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=road_operating_license">
+                      <span data-feather="image"></span>
+                      道路经营许可证
+                  </a>
+                {% else %}
+                  <a class="nav-link" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=road_operating_license">
+                      <span data-feather="image"></span>
+                      道路经营许可证
+                  </a>
+                {% endif %}
+            </li>
+
+            <li class="nav-item">
+                {% if session['show_detail_current_page'] == 'escort_solution' %}
+                  <a class="nav-link active" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=escort_solution">
+                      <span data-feather="image"></span>
+                      护送方案
+                  </a>
+                {% else %}
+                  <a class="nav-link" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=escort_solution">
+                      <span data-feather="image"></span>
+                      护送方案
+                  </a>
+                {% endif %}
+            </li>
+
+            <li class="nav-item">
+                {% if session['show_detail_current_page'] == 'escort_driver_license' %}
+                  <a class="nav-link active" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=escort_driver_license">
+                      <span data-feather="image"></span>
+                      护送车司机驾驶证
+                  </a>
+                {% else %}
+                  <a class="nav-link" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=escort_driver_license">
+                      <span data-feather="image"></span>
+                      护送车司机驾驶证
+                  </a>
+                {% endif %}
+            </li>
+
+            <li class="nav-item">
+                {% if session['show_detail_current_page'] == 'escort_vehicle_license' %}
+                  <a class="nav-link active" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=escort_vehicle_license">
+                      <span data-feather="image"></span>
+                      护送车车辆行驶证
+                  </a>
+                {% else %}
+                  <a class="nav-link" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=escort_vehicle_license">
+                      <span data-feather="image"></span>
+                      护送车车辆行驶证
+                  </a>
+                {% endif %}
+            </li>
+
+            <li class="nav-item">
+                {% if session['show_detail_current_page'] == 'escort_vehicle_files' %}
+                  <a class="nav-link active" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=escort_vehicle_files">
+                      <span data-feather="image"></span>
+                      护送车车辆照片
+                  </a>
+                {% else %}
+                  <a class="nav-link" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=escort_vehicle_files">
+                      <span data-feather="image"></span>
+                      护送车车辆照片
+                  </a>
+                {% endif %}
+            </li>
+
+            <li class="nav-item">
+                {% if session['show_detail_current_page'] == 'valid_vehicle_left_front_files' %}
+                  <a class="nav-link active" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=valid_vehicle_left_front_files">
+                      <span data-feather="image"></span>
+                      现场验证-左前方
+                  </a>
+                {% else %}
+                  <a class="nav-link" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=valid_vehicle_left_front_files">
+                      <span data-feather="image"></span>
+                      现场验证-左前方
+                  </a>
+                {% endif %}
+            </li>
+
+            <li class="nav-item">
+                {% if session['show_detail_current_page'] == 'valid_vehicle_front_files' %}
+                  <a class="nav-link active" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=valid_vehicle_front_files">
+                      <span data-feather="image"></span>
+                      现场验证-正前方
+                  </a>
+                {% else %}
+                  <a class="nav-link" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=valid_vehicle_front_files">
+                      <span data-feather="image"></span>
+                      现场验证-正前方
+                  </a>
+                {% endif %}
+            </li>
+
+            <li class="nav-item">
+                {% if session['show_detail_current_page'] == 'valid_vehicle_right_front_files' %}
+                  <a class="nav-link active" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=valid_vehicle_right_front_files">
+                      <span data-feather="image"></span>
+                      现场验证-右前方
+                  </a>
+                {% else %}
+                  <a class="nav-link" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=valid_vehicle_right_front_files">
+                      <span data-feather="image"></span>
+                      现场验证-右前方
+                  </a>
+                {% endif %}
+            </li>
+
+            <li class="nav-item">
+                {% if session['show_detail_current_page'] == 'valid_vehicle_left_back_files' %}
+                  <a class="nav-link active" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=valid_vehicle_left_back_files">
+                      <span data-feather="image"></span>
+                      现场验证-左后方
+                  </a>
+                {% else %}
+                  <a class="nav-link" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=valid_vehicle_left_back_files">
+                      <span data-feather="image"></span>
+                      现场验证-左后方
+                  </a>
+                {% endif %}
+            </li>
+
+            <li class="nav-item">
+                {% if session['show_detail_current_page'] == 'valid_vehicle_back_files' %}
+                  <a class="nav-link active" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=valid_vehicle_back_files">
+                      <span data-feather="image"></span>
+                      现场验证-正后方
+                  </a>
+                {% else %}
+                  <a class="nav-link" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=valid_vehicle_back_files">
+                      <span data-feather="image"></span>
+                      现场验证-正后方
+                  </a>
+                {% endif %}
+            </li>
+
+            <li class="nav-item">
+                {% if session['show_detail_current_page'] == 'valid_vehicle_right_back_files' %}
+                  <a class="nav-link active" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=valid_vehicle_right_back_files">
+                      <span data-feather="image"></span>
+                      现场验证-右后方
+                  </a>
+                {% else %}
+                  <a class="nav-link" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=valid_vehicle_right_back_files">
+                      <span data-feather="image"></span>
+                      现场验证-右后方
+                  </a>
+                {% endif %}
+            </li>
+
+            <li class="nav-item">
+                {% if session['show_detail_current_page'] == 'valid_whole_scene_files' %}
+                  <a class="nav-link active" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=valid_whole_scene_files">
+                      <span data-feather="image"></span>
+                      现场验证-全景照片
+                  </a>
+                {% else %}
+                  <a class="nav-link" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=valid_whole_scene_files">
+                      <span data-feather="image"></span>
+                      现场验证-全景照片
+                  </a>
+                {% endif %}
+            </li>
+        </ul>
+      </div>
+    </nav>
+
+    <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-md-4">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
+            {% if session['show_detail_current_page'] == 'home' %}
+                <h3>{{session['user_info']['user_name']}}你好，这里是申报单{{ apply_order_num }}的上传文件详情，点击图片可查看原始大小</h3>
+
+            {% elif session['show_detail_current_page'] == 'driver_id_license' %}
+                <div class="file_div">
+                    {% for wx_download_file_url in wx_download_file_url_list %}
+                        {% if 'id_files/id_file' in wx_download_file_url %}
+                            <img class="file_image" src="{{ wx_download_file_url }}" alt="" onclick="show_original('{{ wx_download_file_url }}');"/>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+            {% elif session['show_detail_current_page'] == 'driver_driver_license' %}
+                <div class="file_div">
+                    {% for wx_download_file_url in wx_download_file_url_list %}
+                        {% if 'driver_license_files/driver_license_file' in wx_download_file_url %}
+                            <img class="file_image" src="{{ wx_download_file_url }}" alt="" onclick="show_original('{{ wx_download_file_url }}');"/>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+            {% elif session['show_detail_current_page'] == 'vehicle_license' %}
+                <div class="file_div">
+                    {% for wx_download_file_url in wx_download_file_url_list %}
+                        {% if 'vehicle_license_files/vehicle_license_file' in wx_download_file_url %}
+                            <img class="file_image" src="{{ wx_download_file_url }}" alt="" onclick="show_original('{{ wx_download_file_url }}');"/>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+            {% elif session['show_detail_current_page'] == 'over_limit_license' %}
+                <div class="file_div">
+                    {% for wx_download_file_url in wx_download_file_url_list %}
+                        {% if 'over_limit_license_files/over_limit_license_file' in wx_download_file_url %}
+                            <img class="file_image" src="{{ wx_download_file_url }}" alt="" onclick="show_original('{{ wx_download_file_url }}');"/>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+            {% elif session['show_detail_current_page'] == 'road_operating_license' %}
+                <div class="file_div">
+                    {% for wx_download_file_url in wx_download_file_url_list %}
+                        {% if 'road_operating_license_files/road_operating_license_file' in wx_download_file_url %}
+                            <img class="file_image" src="{{ wx_download_file_url }}" alt="" onclick="show_original('{{ wx_download_file_url }}');"/>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+            {% elif session['show_detail_current_page'] == 'escort_solution' %}
+                <div class="file_div">
+                    {% for wx_download_file_url in wx_download_file_url_list %}
+                        {% if 'solution_files/solution_file' in wx_download_file_url %}
+                            <button type="button" class="btn btn-primary" onclick="show_original('{{ wx_download_file_url }}');">查看护送方案文件PDF</button>
+                        {% endif %}
+                        {% if 'escort_solution_files/escort_solution_file' in wx_download_file_url %}
+                            <img class="file_image" src="{{ wx_download_file_url }}" alt="" onclick="show_original('{{ wx_download_file_url }}');"/>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+            {% elif session['show_detail_current_page'] == 'escort_driver_license' %}
+                <div class="file_div">
+                    {% for wx_download_file_url in wx_download_file_url_list %}
+                        {% if 'escort_driver_license_files/escort_driver_license_file' in wx_download_file_url %}
+                            <img class="file_image" src="{{ wx_download_file_url }}" alt="" onclick="show_original('{{ wx_download_file_url }}');"/>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+            {% elif session['show_detail_current_page'] == 'escort_vehicle_license' %}
+                <div class="file_div">
+                    {% for wx_download_file_url in wx_download_file_url_list %}
+                        {% if 'escort_vehicle_license_files/escort_vehicle_license_file' in wx_download_file_url %}
+                            <img class="file_image" src="{{ wx_download_file_url }}" alt="" onclick="show_original('{{ wx_download_file_url }}');"/>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+            {% elif session['show_detail_current_page'] == 'escort_vehicle_files' %}
+                <div class="file_div">
+                    {% for wx_download_file_url in wx_download_file_url_list %}
+                        {% if 'escort_vehicle_files/escort_vehicle_file' in wx_download_file_url %}
+                            <img class="file_image" src="{{ wx_download_file_url }}" alt="" onclick="show_original('{{ wx_download_file_url }}');"/>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+            {% elif session['show_detail_current_page'] == 'valid_vehicle_left_front_files' %}
+                <div class="file_div">
+                    {% for wx_download_file_url in wx_download_file_url_list %}
+                        {% if 'valid_vehicle_left_front_files/valid_vehicle_left_front_file' in wx_download_file_url %}
+                            <img class="file_image" src="{{ wx_download_file_url }}" alt="" onclick="show_original('{{ wx_download_file_url }}');"/>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+            {% elif session['show_detail_current_page'] == 'valid_vehicle_front_files' %}
+                <div class="file_div">
+                    {% for wx_download_file_url in wx_download_file_url_list %}
+                        {% if 'valid_vehicle_front_files/valid_vehicle_front_file' in wx_download_file_url %}
+                            <img class="file_image" src="{{ wx_download_file_url }}" alt="" onclick="show_original('{{ wx_download_file_url }}');"/>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+            {% elif session['show_detail_current_page'] == 'valid_vehicle_right_front_files' %}
+                <div class="file_div">
+                    {% for wx_download_file_url in wx_download_file_url_list %}
+                        {% if 'valid_vehicle_right_front_files/valid_vehicle_right_front_file' in wx_download_file_url %}
+                            <img class="file_image" src="{{ wx_download_file_url }}" alt="" onclick="show_original('{{ wx_download_file_url }}');"/>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+            {% elif session['show_detail_current_page'] == 'valid_vehicle_left_back_files' %}
+                <div class="file_div">
+                    {% for wx_download_file_url in wx_download_file_url_list %}
+                        {% if 'valid_vehicle_left_back_files/valid_vehicle_left_back_file' in wx_download_file_url %}
+                            <img class="file_image" src="{{ wx_download_file_url }}" alt="" onclick="show_original('{{ wx_download_file_url }}');"/>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+            {% elif session['show_detail_current_page'] == 'valid_vehicle_back_files' %}
+                <div class="file_div">
+                    {% for wx_download_file_url in wx_download_file_url_list %}
+                        {% if 'valid_vehicle_back_files/valid_vehicle_back_file' in wx_download_file_url %}
+                            <img class="file_image" src="{{ wx_download_file_url }}" alt="" onclick="show_original('{{ wx_download_file_url }}');"/>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+            {% elif session['show_detail_current_page'] == 'valid_vehicle_right_back_files' %}
+                <div class="file_div">
+                    {% for wx_download_file_url in wx_download_file_url_list %}
+                        {% if 'valid_vehicle_right_back_files/valid_vehicle_right_back_file' in wx_download_file_url %}
+                            <img class="file_image" src="{{ wx_download_file_url }}" alt="" onclick="show_original('{{ wx_download_file_url }}');"/>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+            {% elif session['show_detail_current_page'] == 'valid_whole_scene_files' %}
+                <div class="file_div">
+                    {% for wx_download_file_url in wx_download_file_url_list %}
+                        {% if 'valid_whole_scene' in wx_download_file_url %}
+                            <img class="file_image" src="{{ wx_download_file_url }}" alt="" onclick="show_original('{{ wx_download_file_url }}');"/>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </main>
+
+  </div>
+</div>
+
+    <script src="/static/js/jquery.slim.min.js"></script>
+    <script>window.jQuery || document.write('<script src="/static/js/jquery.slim.min.js"><\/script>')</script>
+
+
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/feather.min.js"></script>
+    <script src="/static/js/Chart.min.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+
+    <script src="/static/js/bootstrap.min.js"></script>
+
+    <link href="/static/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+    <script src="/static/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="/static/js/bootstrap-datetimepicker.zh-CN.js"></script>
+    <script src="https://web-9gikcbug35bad3a8-1304825656.tcloudbaseapp.com/sdk/1.3.0/cloud.js"></script>
+  </body>
+</html>
