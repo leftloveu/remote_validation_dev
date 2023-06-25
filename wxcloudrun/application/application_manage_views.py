@@ -3,6 +3,7 @@ from flask import Blueprint, render_template, session, url_for, redirect, reques
 import functools, json, requests, datetime
 from wxcloudrun.admin.admin_manage_views import is_login
 from wxcloudrun.application import application_manage_models
+from wxcloudrun.common import common_models
 
 # 注册blueprint
 application_manage_bp = Blueprint('application_manage_bp', __name__, template_folder='templates', static_folder='static')
@@ -45,3 +46,41 @@ def show_detail():
                            apply_order_num=apply_order_num,
                            wx_download_file_url_list=wx_download_file_url_list
                            )
+
+
+# 导出申报单数据
+@application_manage_bp.route('/export_application_data', methods=['POST','GET'])
+@is_login
+def export_application_data():
+    data_export_zipfile_absolute_path = ''
+
+    if session['user_info']['user_associated_account'] == 'YZDZHZX':
+        # 支队账号可查全部数据
+        extra_where_sql = " 1=1 order by verification_datetime desc, apply_order_submit_time desc"
+    else:
+        # 大队账号仅可查大队数据
+        extra_where_sql_list = [
+            " 1=1 and toll_station_id in ( ",
+            " select ",
+            " station.toll_station_id ",
+            " from ",
+            " t_t_toll_station station",
+            ",t_u_office_account account",
+            " WHERE station.office_id = account.office_id ",
+            " and account.office_account = '%s')" % session['user_info']['user_associated_account'],
+            " order by verification_datetime desc, apply_order_submit_time desc "
+        ]
+        extra_where_sql = " ".join(extra_where_sql_list)
+
+    if request.method == "POST":
+        request_params = request.form.to_dict()
+        application_list_export = common_models.export_search(
+                                    "t_a_application",
+                                    request_params,
+                                    {
+                                        'extra_where_sql': extra_where_sql
+                                    }
+        )
+        data_export_zipfile_absolute_path = common_models.generate_data_file(application_list_export)
+
+    return json.dumps({'data_export_zipfile_absolute_path': data_export_zipfile_absolute_path})

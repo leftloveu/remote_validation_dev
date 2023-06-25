@@ -12,36 +12,42 @@
 
     <script type="text/javascript">
 
+        function export_application_data() {
+            var r = confirm("是否导出当前查询结果数据，导出过程中请勿关闭或操作当前页面");
+            if(r === true){
+                var data_export_obj = $('#data_export');
+                data_export_obj.text("数据正在导出，请稍等...");
+                data_export_obj.attr('disabled', true);
+
+                var url = '/application_manage/export_application_data';
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    dataType: 'JSON',
+                    data: JSON.parse('{{ dict_item_str|safe }}'),
+                    success: function(result){
+                        var curWwwPath=window.document.location.href;
+                        var pathName=window.document.location.pathname;
+                        var pos=curWwwPath.indexOf(pathName);
+                        var localhostPath=curWwwPath.substring(0,pos);
+
+                        document.location.href = localhostPath + result.data_export_zipfile_absolute_path;
+                        data_export_obj.text("导出");
+                        data_export_obj.attr('disabled', false);
+                        alert("数据导出成功");
+                    },
+                    error: function(error){
+                        alert("数据导出异常" + error['responseText']);
+                    }
+                    });
+
+            }
+        }
+
         function show_detail(apply_order_num){
             redirect_url = '/application_manage/show_detail' + "?apply_order_num=" + apply_order_num;
             window.open(redirect_url);
         }
-
-
-
-        $(function(){
-            //当容器加载完成，对容器调用工具函数
-            $('#start_datetime').datetimepicker({
-                language:'zh-CN',       //语言
-                format:'yyyy-mm-dd hh:ii',    //日期的格式
-                minView:'hour',        //可以选择的最小视图
-                initialDate:new Date(), //初始化显示的日期
-                autoclose:true,         //设置选择完日期或者时间之后，日否自动关闭日历
-                todayBtn:true,          //设置自动显示为今天
-                clearBtn:true           //设置是否清空按钮，默认为false
-            });
-
-            $('#end_datetime').datetimepicker({
-                language:'zh-CN',       //语言
-                format:'yyyy-mm-dd hh:ii',    //日期的格式
-                minView:'hour',        //可以选择的最小视图
-                initialDate:new Date(), //初始化显示的日期
-                autoclose:true,         //设置选择完日期或者时间之后，日否自动关闭日历
-                todayBtn:true,          //设置自动显示为今天
-                clearBtn:true           //设置是否清空按钮，默认为false
-            });
-
-        });
 
         function clear_conditions(){
             location.href = '/admin_manage/application_manage';
@@ -123,6 +129,43 @@
             }
         }
 
+        function set_value_for_apply_order_status(){
+            var search_conditions = JSON.parse('{{ dict_item_str|safe }}');
+            if(search_conditions['apply_order_status']!=""&&search_conditions['apply_order_status']!=null&&search_conditions['apply_order_status']!=undefined){
+                var apply_order_status_options = document.getElementById('apply_order_status').options;
+                for(var i = 0; i < apply_order_status_options.length; i++){
+                    if(parseInt(apply_order_status_options[i].value)===parseInt(search_conditions['apply_order_status'])){
+                        apply_order_status_options[i].selected = true;
+                    }
+
+                }
+            }
+        }
+
+        $(function(){
+            //当容器加载完成，对容器调用工具函数
+            $('#start_datetime').datetimepicker({
+                language:'zh-CN',       //语言
+                format:'yyyy-mm-dd hh:ii',    //日期的格式
+                minView:'hour',        //可以选择的最小视图
+                initialDate:new Date(), //初始化显示的日期
+                autoclose:true,         //设置选择完日期或者时间之后，日否自动关闭日历
+                todayBtn:true,          //设置自动显示为今天
+                clearBtn:true           //设置是否清空按钮，默认为false
+            });
+
+            $('#end_datetime').datetimepicker({
+                language:'zh-CN',       //语言
+                format:'yyyy-mm-dd hh:ii',    //日期的格式
+                minView:'hour',        //可以选择的最小视图
+                initialDate:new Date(), //初始化显示的日期
+                autoclose:true,         //设置选择完日期或者时间之后，日否自动关闭日历
+                todayBtn:true,          //设置自动显示为今天
+                clearBtn:true           //设置是否清空按钮，默认为false
+            });
+            set_value_for_apply_order_status();
+        });
+
 
     </script>
 {% endblock %}
@@ -185,7 +228,7 @@
                 <div>
                     <button type="submit" class="btn btn-primary btn-sm">查询</button>
                     <button type="button" class="btn btn-info btn-sm" onclick="clear_conditions();">重置</button>
-{#                    <button type="submit" class="btn btn-warning btn-sm">导出</button>#}
+                    <button type="button" class="btn btn-warning btn-sm" id="data_export" onclick="export_application_data();">导出</button>
                 </div>
             </div>
           </div>

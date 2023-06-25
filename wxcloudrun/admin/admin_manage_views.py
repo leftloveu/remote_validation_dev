@@ -111,11 +111,14 @@ def application_manage():
                                                                     }
     )
 
+    dict_item_str = json.dumps(dict_item, default=common_models.json_encoder)
+
     session['current_page'] = 'application_manage'
     return render_template("/application/application_manage.html",
                            application_list=application_list,
                            total_page=application_total_page,
                            page=page,
                            row_count=row_count,
-                           dict_item=dict_item
+                           dict_item=dict_item,
+                           dict_item_str=dict_item_str,
                            )
