@@ -220,7 +220,8 @@ def generate_data_file(application_list_export):
     upload_file_name_with_url_code_list = [
         {'url_code': 'id_files/id_file', 'file_name': '运输车辆司机身份证', 'suffix': '.jpg'},
         {'url_code': 'driver_license_files/driver_license_file', 'file_name': '运输车辆司机驾驶证', 'suffix': '.jpg'},
-        {'url_code': 'vehicle_license_files/vehicle_license_file', 'file_name': '运输车辆行驶证', 'suffix': '.jpg'},
+        {'url_code': 'vehicle_license_files/vehicle_license_file', 'file_name': '牵引车行驶证', 'suffix': '.jpg'},
+        {'url_code': 'trailer_vehicle_license_files/trailer_vehicle_license_file', 'file_name': '挂车行驶证', 'suffix': '.jpg'},
         {'url_code': 'over_limit_license_files/over_limit_license_file', 'file_name': '运输车辆超限运输证', 'suffix': '.jpg'},
         {'url_code': 'road_operating_license_files/road_operating_license_file', 'file_name': '运输车辆道路经营许可证', 'suffix': '.jpg'},
         {'url_code': 'solution_files/solution_file', 'file_name': '护送方案文件', 'suffix': '.pdf'},
@@ -314,7 +315,7 @@ def generate_data_file(application_list_export):
         worksheet.write(row, 2, application["adjust_comment"] if application["adjust_comment"] else '')
         worksheet.write(row, 3, application["verification_datetime"].strftime("%Y-%m-%d %H:%M:%S") if application["verification_datetime"] else '')
         worksheet.write(row, 4, application["plate_number"] if application["plate_number"] else '')
-        # worksheet.write(row, 5, '')
+        worksheet.write(row, 5, application["trailer_plate_number"] if application["trailer_plate_number"] else '')
         worksheet.write(row, 6, application["start_datetime"].strftime("%Y-%m-%d %H:%M:%S") if application["start_datetime"] else '')
         worksheet.write(row, 7, application["end_datetime"].strftime("%Y-%m-%d %H:%M:%S") if application["end_datetime"] else '')
         worksheet.write(row, 8, application["approved_path"] if application["approved_path"] else '')

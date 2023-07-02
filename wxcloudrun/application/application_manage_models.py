@@ -36,16 +36,21 @@ def get_files_list_by_apply_order_num(apply_order_num):
         cursor = conn.cursor()
         # step 1: 基于apply_order_num获取cloudID
         sql = [
-            " SELECT  ",
+            " SELECT ",
             " application.* ",
             ",valid_photo.* ",
-            " FROM t_a_application application, ",
+            " FROM ",
+            " t_a_application application ",
+            " LEFT JOIN ",
             " t_a_application_valid_photo valid_photo ",
-            " WHERE application.apply_order_num = %s " % apply_order_num,
-            " AND application.apply_order_num = valid_photo.apply_order_num "
+            " ON ",
+            " application.apply_order_num = valid_photo.apply_order_num ",
+            " WHERE ",
+            " application.apply_order_num = %s " % apply_order_num
         ]
         cursor.execute("".join(sql))
         row = cursor.fetchone()
+        print(row)
         if row and len(row) > 0:
             # step 2: 基于cloudID获取文件url
             for key in (row.keys()):

@@ -119,12 +119,26 @@
                {% if session['show_detail_current_page'] == 'vehicle_license' %}
                   <a class="nav-link active" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=vehicle_license">
                       <span data-feather="image"></span>
-                      车辆行驶证
+                      牵引车行驶证
                   </a>
                 {% else %}
                   <a class="nav-link" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=vehicle_license">
                       <span data-feather="image"></span>
-                      车辆行驶证
+                      牵引车行驶证
+                  </a>
+                {% endif %}
+            </li>
+
+            <li class="nav-item">
+               {% if session['show_detail_current_page'] == 'trailer_vehicle_license' %}
+                  <a class="nav-link active" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=trailer_vehicle_license">
+                      <span data-feather="image"></span>
+                      挂车行驶证
+                  </a>
+                {% else %}
+                  <a class="nav-link" href="/application_manage/show_detail?apply_order_num={{ apply_order_num }}&show_detail_current_page=trailer_vehicle_license">
+                      <span data-feather="image"></span>
+                      挂车行驶证
                   </a>
                 {% endif %}
             </li>
@@ -341,6 +355,15 @@
                 <div class="file_div">
                     {% for wx_download_file_url in wx_download_file_url_list %}
                         {% if 'vehicle_license_files/vehicle_license_file' in wx_download_file_url %}
+                            <img class="file_image" src="{{ wx_download_file_url }}" alt="" onclick="show_original('{{ wx_download_file_url }}');"/>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+            {% elif session['show_detail_current_page'] == 'trailer_vehicle_license' %}
+                <div class="file_div">
+                    {% for wx_download_file_url in wx_download_file_url_list %}
+                        {% if 'trailer_vehicle_license_files/trailer_vehicle_license_file' in wx_download_file_url %}
                             <img class="file_image" src="{{ wx_download_file_url }}" alt="" onclick="show_original('{{ wx_download_file_url }}');"/>
                         {% endif %}
                     {% endfor %}
