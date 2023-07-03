@@ -796,6 +796,85 @@ def get_apply_info_by_apply_order_num():
             conn.close()
     return make_succ_response(apply_info_list)
 
+
+@app.route('/api/get_apply_info_by_apply_order_num_V2', methods=['POST'])
+def get_apply_info_by_apply_order_num_V2():
+    conn = None
+    cursor = None
+    apply_info_list = ''
+    try:
+        print('get_apply_info_by_apply_order_num start')
+        # 获取数据库链接
+        conn = create_conn()
+        # conn = pymysql.connect(host=config.db_address, user=config.username, passwd=config.password, database=config.database, port=config.port, charset='utf8')
+        # 获取请求体参数
+        params = request.get_json()
+        print(params)
+        # 获取游标
+        cursor = conn.cursor()
+        sql = (
+            " select ",
+            " apply_order_id, ",
+            " apply_order_num, ",
+            " plate_number, ",
+            " trailer_plate_number, ",
+            " charge_department, ",
+            " vehicle_department, ",
+            " driver_mobile_number, ",
+            " driver_id_license_cloudID, ",
+            " driver_driver_license_cloudID, ",
+            " vehicle_license_cloudID, ",
+            " trailer_vehicle_license_cloudID, ",
+            " over_limit_license_cloudID, ",
+            " road_operating_license_cloudID, ",
+            " approved_path, ",
+            " solution_files_cloudID, ",
+            " escort_solution_cloudID, ",
+            # " DATE_FORMAT(start_time,'%H:%i') as start_time, ",
+            # " DATE_FORMAT(end_time,'%H:%i') as end_time, ",
+            # " DATE_FORMAT(start_date,'%Y-%m-%d') as start_date, ",
+            # " DATE_FORMAT(end_date,'%Y-%m-%d') as end_date, ",
+            " DATE_FORMAT(start_datetime,'%Y-%m-%d %H:%i') as start_datetime, ",
+            " DATE_FORMAT(end_datetime,'%Y-%m-%d %H:%i') as end_datetime, ",
+            " escort_plate_number_1, ",
+            " escort_driver_license_cloudID_1, ",
+            " escort_vehicle_license_cloudID_1, ",
+            " escort_vehicle_files_cloudID_1, ",
+            " gross_weight, ",
+            " outer_dimension_length, ",
+            " outer_dimension_width, ",
+            " outer_dimension_height, ",
+            " plate_transport_time, ",
+            # " DATE_FORMAT(appoint_verification_time,'%H:%i') as appoint_verification_time, ",
+            # " DATE_FORMAT(appoint_verification_date,'%Y-%m-%d') as appoint_verification_date, ",
+            " DATE_FORMAT(appoint_verification_datetime,'%Y-%m-%d %H:%i') as appoint_verification_datetime, ",
+            " if(toll_station_id is null, 0, toll_station_id) as toll_station_id, ",
+            " appoint_verification_location, ",
+            " apply_order_status, ",
+            " DATE_FORMAT(apply_order_create_time,'%Y-%m-%d %H:%i:%S') as apply_order_create_time, ",
+            " DATE_FORMAT(apply_order_modify_time,'%Y-%m-%d %H:%i:%S') as apply_order_modify_time, ",
+            " DATE_FORMAT(apply_order_submit_time,'%Y-%m-%d %H:%i:%S') as apply_order_submit_time, ",
+            " apply_order_submit_openid, ",
+            " adjust_comment "
+            " from ",
+            " t_a_application ",
+            " where apply_order_num = %s " % params['apply_order_num']
+        )
+        print(" ".join(sql))
+        cursor.execute(" ".join(sql))
+        rows = cursor.fetchall()
+        print(rows)
+        if rows:
+            apply_info_list = rows
+    except Exception as e:
+        print(str(e))
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+    return make_succ_response(apply_info_list)
+
 @app.route('/api/get_valid_pic_info_by_apply_order_num', methods=['POST'])
 def get_valid_pic_info_by_apply_order_num():
     conn = None
@@ -1050,8 +1129,8 @@ def get_count():
 
 @app.route('/api/recive_callback', methods=['POST'])
 def recive_callback():
-    err_msg = ''
-    params = ''
+    cursor = None
+    conn = None
     recive_callback_data = {
         'uid': None,
         'serviceId': None,
@@ -1155,7 +1234,8 @@ def check_callback_data_and_call(recive_callback_data):
         if recive_callback_data['endReason'] == '0' and recive_callback_data['sipCode'] == '0':
             pass
         # 被叫拒接或忙/被叫未接（有振铃）
-        if (recive_callback_data['endReason'] == '100000006' and recive_callback_data['sipCode'] == '500') or (recive_callback_data['endReason'] == '100000007' and recive_callback_data['sipCode'] == '603'):
+        # if (recive_callback_data['endReason'] == '100000006' and recive_callback_data['sipCode'] == '500') or (recive_callback_data['endReason'] == '100000007' and recive_callback_data['sipCode'] == '603'):
+        else:
             # 外呼的实际结果并未成功，检查此报备单外呼总次数
             sql = "SELECT COUNT(1) AS total_call_times FROM t_a_call_feedback WHERE applyOrderNum = '%s' " % recive_callback_data['applyOrderNum']
             cursor.execute(sql)
