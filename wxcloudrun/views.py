@@ -1285,6 +1285,284 @@ def check_callback_data_and_call(recive_callback_data):
         if conn:
             conn.close()
 
+
+@app.route('/api/recive_callback_tencent', methods=['POST'])
+def recive_callback_tencent():
+    cursor = None
+    conn = None
+    recive_callback_data = {
+        "result": None,
+        "accept_time": None,
+        "call_from": None,
+        "callid": None,
+        "end_calltime": None,
+        "fee": None,
+        "mobile": None,
+        "nationcode": None,
+        "start_calltime": None
+    }
+    try:
+        # 获取请求体参数
+        params = request.get_json()['voiceprompt_callback']
+        # 规整数据
+        for key in recive_callback_data.keys():
+            if key in params.keys():
+                recive_callback_data[key] = params[key]
+        # 拼接数据写入DB
+        recive_callback_data['callback_data'] = json.dumps(recive_callback_data)
+        # 获取数据库链接
+        conn = create_conn()
+        # 获取游标
+        cursor = conn.cursor()
+
+        sql = [
+            " INSERT INTO t_a_call_feedback_tencent ( ",
+            " callback_data ",
+            ",result ",
+            ",accept_time ",
+            ",call_from ",
+            ",callid ",
+            ",end_calltime ",
+            ",fee ",
+            ",mobile ",
+            ",nationcode ",
+            ",start_calltime ",
+            ") VALUES ( ",
+            " %(callback_data)s ",
+            ",%(result)s ",
+            ",%(accept_time)s ",
+            ",%(call_from)s ",
+            ",%(callid)s ",
+            ",%(end_calltime)s ",
+            ",%(fee)s ",
+            ",%(mobile)s ",
+            ",%(nationcode)s ",
+            ",%(start_calltime)s ",
+            ") ",
+        ]
+        print(" ".join(sql))
+        cursor.execute(" ".join(sql), recive_callback_data)
+        conn.commit()
+        # 基于返回的数据，做逻辑判断，是否重新发起外呼
+        check_callback_data_and_call_tencent(recive_callback_data)
+    except Exception as e:
+        err_msg = str(e)
+        return make_err_response(err_msg)
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+        return make_succ_empty_response()
+
+
+def check_callback_data_and_call_tencent(recive_callback_data):
+    conn = None
+    cursor = None
+    try:
+        print('------ check_callback_data_and_call_tencent --------')
+        # 获取数据库链接
+        conn = create_conn()
+        # 获取游标
+        cursor = conn.cursor()
+
+        # 检查返回数据中，外呼的实际结果是否已成功，如果成功了，则不再重复呼叫
+        # 被叫已接听
+        if recive_callback_data['result'] == '0':
+            pass
+        # 被叫未接听或未接通等其他情况
+        else:
+            # 外呼的实际结果并未成功，检查此报备单外呼总次数
+            # recive_callback_data['callid'] = t_a_call_log_tencent.callid
+            # -> t_a_call_log_tencent.ext
+            # -> t_a_call_log_tencent.callid
+            # -> count(t_a_call_feedback_tencent.callid)
+            sql = [
+                " SELECT count( 1 ) AS total_call_times ",
+                " FROM",
+                " t_a_call_feedback_tencent ",
+                " WHERE",
+                " callid IN ( SELECT callid ",
+                " FROM t_a_call_log_tencent ",
+                " WHERE",
+                " ext = ( SELECT ext ",
+                " FROM t_a_call_log_tencent ",
+                " WHERE callid = '%s' " % recive_callback_data['callid'],
+                " )) "
+            ]
+            cursor.execute("".join(sql))
+            row = cursor.fetchone()
+            print(row)
+            if int(row['total_call_times']) < 3:
+                print('------ %s自动外呼第%s次 --------' % (recive_callback_data['mobile'], int(row['total_call_times']) + 1))
+                # 若此报备单外呼总次数未超过3，则继续外呼（等待40秒，因语音播报全程需要30秒）
+                time.sleep(40)
+                # 获取外呼请求参数（最新）
+                sql_params = "SELECT * FROM t_a_call_log_tencent WHERE callid = '%s' ORDER BY call_log_id DESC" % recive_callback_data['callid']
+                cursor.execute(sql_params)
+                call_params = cursor.fetchone()
+                # print(call_params)
+                # 发起外呼
+                init_call(call_params['mobile'], call_params['ext'], call_params['plate_number'], call_params['toll_station'])
+            else:
+                # 若此报备单外呼总次数已达3次，则停止外呼
+                pass
+    except Exception as e:
+        print(str(e))
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+@app.route('/api/call_by_tencent', methods=['POST'])
+def call_by_tencent():
+    call_result = ''
+    try:
+        # 获取请求体参数
+        params = request.get_json()
+
+        # 请求体入参
+        mobile = params['callee']
+        apply_order_num = params['requestId']
+        plate_number = params['plate_number']
+        toll_station = params['toll_station']
+
+        call_result = init_call(mobile, apply_order_num, plate_number, toll_station)
+
+    except Exception as e:
+        # print(str(e))
+        return make_err_response(str(e))
+    finally:
+        return make_succ_response(call_result)
+
+
+def init_call(mobile, apply_order_num, plate_number, toll_station):
+    call_result = ''
+    try:
+        print('init_call start')
+
+        # 接口配置
+        sdkappid = '1400820332'
+        appkey = '3dd4584bcc3382ff29c57e7ce779b9f9'
+        tpl_id = 1478259  # 语音模板ID
+
+        # 固定入参
+        random_num = random.randint(10000, 99999)
+        time_unix = int(time.time())
+
+        # 初始化sig
+        sig_original_data_list = [
+            "appkey=%s" % appkey,
+            "random=%s" % random_num,
+            "time=%s" % time_unix,
+            "mobile=%s" % mobile
+        ]
+        sig_original_data = "&".join(sig_original_data_list).encode('utf8')
+        hash_object = hashlib.sha256()
+        hash_object.update(sig_original_data)
+        sig = hash_object.hexdigest()
+
+        url = 'https://cloud.tim.qq.com/v5/tlsvoicesvr/sendtvoice?sdkappid=%s&random=%s' % (sdkappid, random_num)
+        data = {
+            "tpl_id": tpl_id,
+            "params": [plate_number, toll_station],
+            "playtimes": 2,
+            "sig": sig,
+            "tel": {
+                "mobile": mobile,
+                "nationcode": "86"
+            },
+            "time": time_unix,
+            "ext": apply_order_num
+        }
+
+        print(data)
+        call_result = requests.post(url, data=json.dumps(data))
+        print(call_result.content)
+        # 将请求数据和返回数据写入DB
+        add_call_log_tencent(data, call_result.content)
+    except Exception as e:
+        # print(str(e))
+        return make_err_response(str(e))
+    finally:
+        return call_result.content.decode('utf-8')
+
+
+def add_call_log_tencent(data, result):
+    conn = None
+    cursor = None
+    try:
+        # 获取数据库链接
+        conn = create_conn()
+        # 获取游标
+        cursor = conn.cursor()
+
+        sql = [
+            " INSERT INTO t_a_call_log_tencent ( ",
+            " call_data ",
+            ",call_response_data ",
+            ",tpl_id ",
+            ",plate_number ",
+            ",toll_station ",
+            ",playtimes ",
+            ",sig ",
+            ",mobile ",
+            ",nationcode",
+            ",time ",
+            ",ext ",
+            ",result ",
+            ",errmsg ",
+            ",callid ",
+            ",resp_ext ",
+            ") VALUES ( ",
+            " %(call_data)s ",
+            ",%(call_response_data)s ",
+            ",%(tpl_id)s ",
+            ",%(plate_number)s ",
+            ",%(toll_station)s ",
+            ",%(play_times)s ",
+            ",%(sig)s ",
+            ",%(mobile)s ",
+            ",%(nation_code)s ",
+            ",%(time)s ",
+            ",%(ext)s ",
+            ",%(result)s ",
+            ",%(errmsg)s ",
+            ",%(callid)s ",
+            ",%(resp_ext)s ",
+            ") ",
+        ]
+        args = {
+             'call_data': json.dumps(data)
+            ,'call_response_data': result.decode('utf-8')
+            ,'tpl_id': data['tpl_id']
+            ,'plate_number': data['params'][0]
+            ,'toll_station': data['params'][1]
+            ,'play_times': data['playtimes']
+            ,'sig': data['sig']
+            ,'mobile': data['tel']['mobile']
+            ,'nation_code': data['tel']['nationcode']
+            ,'time': data['time']
+            ,'ext': data['ext']
+            ,'result': json.loads(result)['result']
+            ,'errmsg': json.loads(result)['errmsg']
+            ,'callid': json.loads(result)['callid']
+            ,'resp_ext': json.loads(result)['ext']
+        }
+        print(" ".join(sql))
+        cursor.execute(" ".join(sql), args)
+        conn.commit()
+    except Exception as e:
+        print(str(e))
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
 @app.route('/api/call', methods=['POST'])
 def call():
     try:
