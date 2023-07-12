@@ -1435,7 +1435,7 @@ def call_by_tencent():
         # print(str(e))
         return make_err_response(str(e))
     finally:
-        return make_succ_response(call_result)
+        return make_succ_response(json.loads(call_result))
 
 
 def init_call(mobile, apply_order_num, plate_number, toll_station):
@@ -1487,7 +1487,7 @@ def init_call(mobile, apply_order_num, plate_number, toll_station):
         # print(str(e))
         return make_err_response(str(e))
     finally:
-        return call_result.content.decode('utf-8')
+        return call_result.content.decode('utf8')
 
 
 def add_call_log_tencent(data, result):
