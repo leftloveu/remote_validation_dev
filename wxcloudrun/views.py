@@ -1814,25 +1814,25 @@ def get_apply_order_call_records():
             ",total_records.* FROM ",
             "(SELECT  ",
             " count( 1 ) AS success_records_times ",
-            ",max( inviteTime ) AS success_record_latest_datetime ",
+            ",FROM_UNIXTIME(max(start_calltime), '%%Y-%%m-%%d %%T') AS success_record_latest_datetime ",
             " FROM ",
-            " t_a_call_feedback ",
+            " t_a_call_feedback_tencent ",
             " WHERE ",
-            " applyOrderNum = %(applyOrderNum)s AND ",
-            " serviceResult = %(serviceResult)s ",
+            " callid in (select callid from t_a_call_log_tencent where ext = %(ext)s) ",
+            " and result = %(result)s ",
             ") success_records, ",
             "(SELECT  ",
             " count( 1 ) AS total_records_times ",
-            ",max( inviteTime ) AS total_record_latest_datetime ",
+            ",FROM_UNIXTIME(max(start_calltime), '%%Y-%%m-%%d %%T') AS total_record_latest_datetime ",
             " FROM ",
-            " t_a_call_feedback ",
+            " t_a_call_feedback_tencent ",
             " WHERE ",
-            " applyOrderNum = %(applyOrderNum)s ",
+            " callid in (select callid from t_a_call_log_tencent where ext = %(ext)s) ",
             ") total_records "
         )
         args = {
-            'applyOrderNum': params['apply_order_num'],
-            'serviceResult': '0'
+            'ext': params['apply_order_num'],
+            'result': '0'
         }
         print(" ".join(sql))
         cursor.execute(" ".join(sql), args)
